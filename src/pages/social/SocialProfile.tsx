@@ -786,7 +786,7 @@ export default function SocialProfile() {
                         />
                       ) : (
                         <img
-                          src={optimizeImageUrl(post.media_url, 800)}
+                          src={optimizeImageUrl(post.media_url, { width: 800 })}
                           alt={post.content ? `Post by ${post.profiles?.username}` : "Friend post"}
                           loading="lazy"
                           className="w-full rounded-xl bg-secondary max-h-[420px] object-cover"
