@@ -1,660 +1,721 @@
-// @ts-nocheck
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
+import { toast } from "sonner";
 import {
-  Database,
-  Download,
-  Upload,
-  RefreshCw,
-  Shield,
   AlertTriangle,
   CheckCircle2,
   Clock,
-  FileJson,
-  FileText,
+  Database,
+  Download,
   FileCode,
+  FileJson,
   HardDrive,
+  History,
   Loader2,
+  RefreshCw,
+  RotateCcw,
+  Shield,
+  ShieldCheck,
   Table as TableIcon,
   Trash2,
-  Sparkles,
-  History,
-  Save,
+  Upload,
 } from "lucide-react";
-import { exportAsJSON, exportAsCSV, exportAsSQL, getExportFilename, toSQL } from "@/utils/export";
-import { toast } from "sonner";
-import { format } from "date-fns";
 
-const EXPORTABLE_TABLES = [
-  { key: "profiles", label: "Users / Profiles", icon: "👤", sensitive: false },
-  { key: "tournaments", label: "Tournaments", icon: "🏆", sensitive: false },
-  { key: "matches", label: "Matches", icon: "🎮", sensitive: false },
-  { key: "payments", label: "Payments", icon: "💳", sensitive: true },
-  { key: "registrations", label: "Registrations", icon: "📋", sensitive: false },
-  { key: "user_statuses", label: "Posts / Statuses", icon: "📝", sensitive: false },
-  { key: "status_comments", label: "Comments", icon: "💬", sensitive: false },
-  { key: "marketplace_listings", label: "Marketplace Listings", icon: "🛒", sensitive: false },
-  { key: "achievements", label: "Achievements", icon: "🏅", sensitive: false },
-  { key: "user_achievements", label: "User Achievements", icon: "⭐", sensitive: false },
-  { key: "notifications", label: "Notifications", icon: "🔔", sensitive: false },
-  { key: "support_tickets", label: "Support Tickets", icon: "🎫", sensitive: false },
-  { key: "game_rooms", label: "Game Rooms", icon: "🕹️", sensitive: false },
-  { key: "referrals", label: "Referrals", icon: "🔗", sensitive: false },
-  { key: "rewards", label: "Rewards & Redemptions", icon: "🎁", sensitive: false },
-  { key: "user_roles", label: "User Roles & Permissions", icon: "🔑", sensitive: true },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { downloadFile, exportAsCSV, exportAsJSON, getExportFilename } from "@/utils/export";
+import {
+  BACKUP_TABLES,
+  buildSnapshot,
+  normalizePayload,
+  restorePayload,
+  summarizePayload,
+  toFullSqlDump,
+} from "@/lib/backup/engine";
+import { sqlDumpToPayload } from "@/lib/backup/sql-parser";
+import {
+  MAX_SNAPSHOTS,
+  dayKey,
+  deleteSnapshot,
+  getSnapshot,
+  listSnapshots,
+} from "@/lib/backup/snapshot-store";
+import type { BackupSnapshot, RestoreMode, RestoreResult } from "@/lib/backup/types";
 
-const RESTORABLE_TABLES = [
-  "profiles",
-  "tournaments",
-  "matches",
-  "registrations",
-  "achievements",
-  "user_statuses",
-  "marketplace_listings",
-  "game_rooms",
-  "rewards",
-  "user_roles",
-];
+const AUTO_KEY = "gameflex_auto_backup_enabled";
+const LAST_EXPORT_KEY = "gameflex_last_export";
+const CONFIRM_PHRASE = "REPLACE DATA";
+
+const TABLE_LABELS: Record<string, string> = {
+  profiles: "Users / Profiles",
+  tournaments: "Tournaments",
+  matches: "Matches",
+  payments: "Payments",
+  registrations: "Registrations",
+  user_statuses: "Posts / Statuses",
+  status_comments: "Comments",
+  status_likes: "Likes",
+  marketplace_listings: "Marketplace Listings",
+  achievements: "Achievements",
+  user_achievements: "User Achievements",
+  notifications: "Notifications",
+  support_tickets: "Support Tickets",
+  game_rooms: "Game Rooms / Lobbies",
+  referrals: "Referrals",
+  rewards: "Rewards & Redemptions",
+  user_follows: "Follows",
+  user_roles: "Roles & Permissions",
+};
+
+const label = (table: string) => TABLE_LABELS[table] ?? table;
+
+type PendingRestore = {
+  source: string;
+  payload: BackupSnapshot["payload"];
+};
 
 export default function AdminBackup() {
-  const [exporting, setExporting] = useState<string | null>(null);
-  const [exportingAll, setExportingAll] = useState(false);
-  const [exportingSQL, setExportingSQL] = useState(false);
-  const [importPreview, setImportPreview] = useState<any>(null);
-  const [importFile, setImportFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [busy, setBusy] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ label: string; value: number } | null>(null);
+  const [snapshots, setSnapshots] = useState<
+    Awaited<ReturnType<typeof listSnapshots>>
+  >([]);
+  const [autoEnabled, setAutoEnabled] = useState(true);
+  const [lastExport, setLastExport] = useState<string | null>(null);
+
+  const [pending, setPending] = useState<PendingRestore | null>(null);
+  const [restoreMode, setRestoreMode] = useState<RestoreMode>("merge");
+  const [confirmText, setConfirmText] = useState("");
   const [restoring, setRestoring] = useState(false);
-  
-  // Daily Auto Backup settings
-  const [autoBackupEnabled, setAutoBackupEnabled] = useState<boolean>(() => {
-    return localStorage.getItem("gameflex_auto_backup_enabled") !== "false";
-  });
-  
-  // Historical Snapshots stored in local storage
-  const [snapshots, setSnapshots] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem("gameflex_backup_snapshots");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [lastResult, setLastResult] = useState<RestoreResult | null>(null);
 
-  const lastExport = localStorage.getItem("gameflex_last_export");
+  useEffect(() => {
+    setAutoEnabled(localStorage.getItem(AUTO_KEY) !== "false");
+    setLastExport(localStorage.getItem(LAST_EXPORT_KEY));
+    listSnapshots().then(setSnapshots).catch(() => setSnapshots([]));
+  }, []);
 
-  // Table row counts
-  const {
-    data: counts = {},
-    refetch: refetchCounts,
-    isLoading: countsLoading,
-  } = useQuery({
+  const { data: counts = {}, refetch: refetchCounts, isFetching: countsLoading } = useQuery({
     queryKey: ["admin-table-counts"],
     queryFn: async () => {
-      const results = await Promise.all(
-        EXPORTABLE_TABLES.map(async (t) => {
+      const entries = await Promise.all(
+        BACKUP_TABLES.map(async (table) => {
           const { count } = await supabase
-            .from(t.key as any)
+            .from(table as never)
             .select("*", { count: "exact", head: true });
-          return [t.key, count ?? 0];
+          return [table, count ?? 0] as const;
         }),
       );
-      return Object.fromEntries(results);
+      return Object.fromEntries(entries) as Record<string, number>;
     },
   });
 
-  // Toggle Auto Backup
-  const handleToggleAutoBackup = (checked: boolean) => {
-    setAutoBackupEnabled(checked);
-    localStorage.setItem("gameflex_auto_backup_enabled", String(checked));
-    if (checked) {
-      toast.success("Automated daily backups enabled!");
-    } else {
-      toast.info("Automated daily backups disabled.");
-    }
-  };
+  const totalRows = useMemo(
+    () => Object.values(counts).reduce((sum, n) => sum + n, 0),
+    [counts],
+  );
 
-  // Run or Trigger a Full Backup Snapshot
-  const createBackupSnapshot = useCallback(async (type: "manual" | "auto" = "manual") => {
-    try {
-      const tablesData: Record<string, any[]> = {};
-      let totalRecordsCount = 0;
-
-      for (const t of EXPORTABLE_TABLES) {
-        const { data } = await supabase.from(t.key as any).select("*");
-        tablesData[t.key] = data ?? [];
-        totalRecordsCount += (data ?? []).length;
-      }
-
-      // Add local storage data to prevent any data loss
-      const localRegistrations = localStorage.getItem("gameflex_registrations");
-      const localPayments = localStorage.getItem("gameflex_local_payments");
-      const localData = {
-        registrations: localRegistrations ? JSON.parse(localRegistrations) : [],
-        payments: localPayments ? JSON.parse(localPayments) : [],
-      };
-
-      const now = new Date().toISOString();
-      const snapshotObj = {
-        id: "snapshot_" + Date.now(),
-        exported_at: now,
-        type,
-        total_records: totalRecordsCount,
-        tables: tablesData,
-        local_data: localData,
-      };
-
-      // Save to snapshots history (keep latest 10)
-      setSnapshots((prev) => {
-        const updatedSnapshots = [snapshotObj, ...prev.slice(0, 9)];
-        localStorage.setItem("gameflex_backup_snapshots", JSON.stringify(updatedSnapshots));
-        return updatedSnapshots;
-      });
-      localStorage.setItem("gameflex_last_export", now);
-
-      return snapshotObj;
-    } catch (err: any) {
-      console.error("Snapshot error:", err);
-      throw err;
-    }
+  const runSnapshot = useCallback(async (type: "manual" | "auto") => {
+    const snapshot = await buildSnapshot(type, (table, index, total) => {
+      setProgress({ label: `Reading ${label(table)}`, value: Math.round((index / total) * 100) });
+    });
+    setProgress(null);
+    localStorage.setItem(LAST_EXPORT_KEY, snapshot.exported_at);
+    setLastExport(snapshot.exported_at);
+    setSnapshots(await listSnapshots());
+    return snapshot;
   }, []);
 
-  // Check for auto daily backup on mount
+  // One automatic snapshot per calendar day; the store keeps the newest three days.
   useEffect(() => {
-    if (!autoBackupEnabled) return;
+    if (!autoEnabled) return;
+    let cancelled = false;
 
-    const lastAutoTime = localStorage.getItem("gameflex_last_auto_backup_time");
-    const nowMs = Date.now();
-    const DAY_MS = 24 * 60 * 60 * 1000;
-
-    if (!lastAutoTime || nowMs - parseInt(lastAutoTime, 10) > DAY_MS) {
-      createBackupSnapshot("auto")
-        .then(() => {
-          localStorage.setItem("gameflex_last_auto_backup_time", String(nowMs));
-          toast.success("Daily automated database backup snapshot completed!");
-        })
-        .catch(() => {
-          // silent fallback
-        });
-    }
-  }, [autoBackupEnabled, createBackupSnapshot]);
-
-  const handleExport = async (table: string, formatType: "json" | "csv" | "sql") => {
-    setExporting(table + "_" + formatType);
-    try {
-      const { data, error } = await supabase.from(table as any).select("*");
-      if (error) throw error;
-      const filename = getExportFilename(table, formatType);
-      
-      if (formatType === "json") exportAsJSON(data, filename);
-      else if (formatType === "csv") exportAsCSV(data ?? [], filename);
-      else if (formatType === "sql") exportAsSQL(table, data ?? [], filename);
-
-      localStorage.setItem("gameflex_last_export", new Date().toISOString());
-      toast.success(`Exported ${data?.length ?? 0} rows from ${table} as ${formatType.toUpperCase()}`);
-    } catch (err: any) {
-      toast.error("Export failed: " + err.message);
-    } finally {
-      setExporting(null);
-    }
-  };
-
-  const handleExportAllJSON = async () => {
-    setExportingAll(true);
-    try {
-      const snapshot = await createBackupSnapshot("manual");
-      exportAsJSON(snapshot, getExportFilename("full_database_dump", "json"));
-      toast.success("Full database JSON dump exported successfully!");
-    } catch (err: any) {
-      toast.error("Backup failed: " + err.message);
-    } finally {
-      setExportingAll(false);
-    }
-  };
-
-  const handleExportAllSQL = async () => {
-    setExportingSQL(true);
-    try {
-      let fullSql = `-- GameFlex Complete Database Dump\n-- Generated at: ${new Date().toISOString()}\n\n`;
-      
-      for (const t of EXPORTABLE_TABLES) {
-        const { data } = await supabase.from(t.key as any).select("*");
-        fullSql += toSQL(t.key, data ?? []) + "\n";
+    (async () => {
+      const existing = await listSnapshots();
+      if (cancelled || existing.some((s) => s.day === dayKey())) return;
+      try {
+        const snapshot = await runSnapshot("auto");
+        toast.success(
+          `Daily backup captured — ${snapshot.total_records.toLocaleString()} records safe`,
+        );
+      } catch {
+        // Never block the admin UI on an automatic backup.
       }
+    })();
 
-      exportAsSQL("full_database_dump", [], getExportFilename("full_database_dump", "sql"));
-      // Overwrite file content with fullSql
-      const blob = new Blob([fullSql], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = getExportFilename("full_database_dump", "sql");
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+    return () => {
+      cancelled = true;
+    };
+  }, [autoEnabled, runSnapshot]);
 
-      localStorage.setItem("gameflex_last_export", new Date().toISOString());
-      toast.success("Full database SQL dump created!");
-    } catch (err: any) {
-      toast.error("SQL dump failed: " + err.message);
-    } finally {
-      setExportingSQL(false);
-    }
+  const toggleAuto = (checked: boolean) => {
+    setAutoEnabled(checked);
+    localStorage.setItem(AUTO_KEY, String(checked));
+    toast[checked ? "success" : "info"](
+      checked ? "Daily automatic backups enabled" : "Daily automatic backups paused",
+    );
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImportFile(file);
+  const handleManualSnapshot = async () => {
+    setBusy("snapshot");
     try {
-      const text = await file.text();
-      const json = JSON.parse(text);
-      setImportPreview(json);
-    } catch {
-      toast.error("Invalid JSON file");
-      setImportFile(null);
+      const snapshot = await runSnapshot("manual");
+      toast.success(`Snapshot saved — ${snapshot.total_records.toLocaleString()} records`);
+    } catch (error) {
+      toast.error(`Snapshot failed: ${(error as Error).message}`);
+    } finally {
+      setBusy(null);
+      setProgress(null);
     }
   };
 
-  const handleRestoreFromSnapshot = (snap: any) => {
-    setImportPreview(snap);
-    toast.info("Snapshot selected for restoration preview");
+  const handleExport = async (kind: "json" | "sql") => {
+    setBusy(kind);
+    try {
+      const snapshot = await runSnapshot("manual");
+      if (kind === "json") {
+        exportAsJSON(snapshot.payload, getExportFilename("gameflex_full_backup", "json"));
+        toast.success("Full JSON backup downloaded");
+      } else {
+        downloadFile(
+          toFullSqlDump(snapshot.payload),
+          getExportFilename("gameflex_full_backup", "sql"),
+          "application/sql",
+        );
+        toast.success("Full SQL dump downloaded");
+      }
+    } catch (error) {
+      toast.error(`Export failed: ${(error as Error).message}`);
+    } finally {
+      setBusy(null);
+      setProgress(null);
+    }
   };
 
-  const handleDeleteSnapshot = (id: string) => {
-    const updated = snapshots.filter((s) => s.id !== id);
-    setSnapshots(updated);
-    localStorage.setItem("gameflex_backup_snapshots", JSON.stringify(updated));
-    toast.success("Snapshot deleted");
+  const handleTableExport = async (table: string, kind: "json" | "csv") => {
+    setBusy(`${table}_${kind}`);
+    try {
+      const { data, error } = await supabase.from(table as never).select("*");
+      if (error) throw new Error(error.message);
+      const rows = (data ?? []) as Record<string, unknown>[];
+      const filename = getExportFilename(table, kind);
+      if (kind === "json") exportAsJSON(rows, filename);
+      else exportAsCSV(rows, filename);
+      toast.success(`Exported ${rows.length.toLocaleString()} rows from ${label(table)}`);
+    } catch (error) {
+      toast.error(`Export failed: ${(error as Error).message}`);
+    } finally {
+      setBusy(null);
+    }
   };
 
-  const handleRestore = async () => {
-    if (!importPreview?.tables) {
-      toast.error("Invalid backup format");
+  const handleDownloadSnapshot = async (id: string) => {
+    const snapshot = await getSnapshot(id);
+    if (!snapshot) {
+      toast.error("Snapshot no longer available");
       return;
     }
-    setRestoring(true);
+    exportAsJSON(snapshot.payload, getExportFilename("gameflex_snapshot", "json"));
+  };
+
+  const handleRestoreFromSnapshot = async (id: string) => {
+    const snapshot = await getSnapshot(id);
+    if (!snapshot) {
+      toast.error("Snapshot no longer available");
+      return;
+    }
+    openRestore(
+      `${snapshot.type === "auto" ? "Daily" : "Manual"} snapshot — ${format(
+        new Date(snapshot.exported_at),
+        "MMM d, HH:mm",
+      )}`,
+      snapshot.payload,
+    );
+  };
+
+  const handleDeleteSnapshot = async (id: string) => {
+    await deleteSnapshot(id);
+    setSnapshots(await listSnapshots());
+    toast.success("Snapshot removed from history (database untouched)");
+  };
+
+  const openRestore = (source: string, payload: BackupSnapshot["payload"]) => {
+    setPending({ source, payload });
+    setRestoreMode("merge");
+    setConfirmText("");
+    setLastResult(null);
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
     try {
-      let restored = 0;
-      for (const table of RESTORABLE_TABLES) {
-        const rows = importPreview.tables[table];
-        if (!rows?.length) continue;
-        const { error } = await supabase.from(table as any).upsert(rows, { onConflict: "id" });
-        if (!error) restored += rows.length;
-      }
+      const text = await file.text();
+      const payload = file.name.toLowerCase().endsWith(".sql")
+        ? sqlDumpToPayload(text)
+        : normalizePayload(JSON.parse(text));
 
-      // Also restore local storage items if included
-      if (importPreview.local_data?.registrations?.length) {
-        localStorage.setItem(
-          "gameflex_registrations",
-          JSON.stringify(importPreview.local_data.registrations),
-        );
+      if (!payload || Object.keys(payload.tables).length === 0) {
+        toast.error("No restorable rows found in that file");
+        return;
       }
-
-      toast.success(`Successfully restored ${restored} records!`);
-      setImportPreview(null);
-      setImportFile(null);
-      refetchCounts();
-    } catch (err: any) {
-      toast.error("Restore failed: " + err.message);
-    } finally {
-      setRestoring(false);
+      openRestore(file.name, payload);
+    } catch {
+      toast.error("Could not read that file — expected a GameFlex .json or .sql backup");
     }
   };
 
-  const totalRows = Object.values(counts as Record<string, number>).reduce((a, b) => a + b, 0);
+  const summary = pending ? summarizePayload(pending.payload) : null;
+  const replaceBlocked = restoreMode === "replace" && confirmText.trim() !== CONFIRM_PHRASE;
+
+  const handleRestore = async () => {
+    if (!pending || !summary) return;
+    setRestoring(true);
+    try {
+      const result = await restorePayload(
+        pending.payload,
+        { mode: restoreMode, tables: summary.known.map((t) => t.table) },
+        (table, index, total) => {
+          setProgress({
+            label: `Restoring ${label(table)}`,
+            value: Math.round((index / total) * 100),
+          });
+        },
+      );
+      setLastResult(result);
+      setProgress(null);
+      setPending(null);
+      refetchCounts();
+
+      if (result.failed > 0) {
+        toast.warning(
+          `Restored ${result.totalWritten.toLocaleString()} rows — ${result.failed} table(s) reported errors`,
+        );
+      } else {
+        toast.success(`Restored ${result.totalWritten.toLocaleString()} rows successfully`);
+      }
+    } catch (error) {
+      toast.error(`Restore failed: ${(error as Error).message}`);
+    } finally {
+      setRestoring(false);
+      setProgress(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold flex items-center gap-2">
-            <Database className="h-6 w-6 text-primary" /> Database Backup & Safeguard
+          <h1 className="font-display flex items-center gap-2 text-2xl font-bold">
+            <Database className="h-6 w-6 text-primary" /> Backup &amp; Restore
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Ensure complete zero-data-loss protection with automated daily dumps, SQL exports, and local snapshots
+          <p className="mt-1 text-sm text-muted-foreground">
+            Three rolling days of automatic snapshots, exportable JSON/SQL dumps, and a restore
+            path that cannot delete data unless you explicitly ask it to.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {lastExport && (
-            <div className="text-xs text-muted-foreground flex items-center gap-1 mr-2">
-              <Clock className="h-3 w-3" /> Last backup:{" "}
-              {format(new Date(lastExport), "MMM d, HH:mm")}
-            </div>
+            <span className="mr-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" /> Last backup {format(new Date(lastExport), "MMM d, HH:mm")}
+            </span>
           )}
-          <Button variant="outline" onClick={handleExportAllSQL} disabled={exportingSQL}>
-            {exportingSQL ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          <Button variant="outline" onClick={() => handleExport("sql")} disabled={busy !== null}>
+            {busy === "sql" ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <FileCode className="h-4 w-4 mr-2 text-blue-500" />
+              <FileCode className="mr-2 h-4 w-4" />
             )}
-            SQL Dump
+            SQL dump
           </Button>
-          <Button onClick={handleExportAllJSON} disabled={exportingAll}>
-            {exportingAll ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          <Button onClick={() => handleExport("json")} disabled={busy !== null}>
+            {busy === "json" ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
             )}
-            Full JSON Dump
+            Full JSON backup
           </Button>
         </div>
-      </div>
+      </header>
 
-      {/* Auto Backup & Health Status Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-emerald-500/10 border-emerald-500/30">
-          <CardContent className="p-4 flex items-center gap-3">
-            <CheckCircle2 className="h-8 w-8 text-emerald-500 shrink-0" />
-            <div>
-              <div className="font-bold text-lg">{totalRows.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">Total Database Records</div>
+      {progress && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="space-y-2 p-4">
+            <div className="flex items-center justify-between text-sm font-medium">
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                {progress.label}
+              </span>
+              <span className="text-muted-foreground">{progress.value}%</span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-blue-500/10 border-blue-500/30">
-          <CardContent className="p-4 flex items-center gap-3">
-            <TableIcon className="h-8 w-8 text-blue-500 shrink-0" />
-            <div>
-              <div className="font-bold text-lg">{EXPORTABLE_TABLES.length}</div>
-              <div className="text-xs text-muted-foreground">Monitored Tables</div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-purple-500/10 border-purple-500/30">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Shield className="h-8 w-8 text-purple-500 shrink-0" />
-            <div>
-              <div className="font-bold text-lg">Cloud + Local</div>
-              <div className="text-xs text-muted-foreground">Dual Protection Active</div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-amber-500/10 border-amber-500/30">
-          <CardContent className="p-4 flex items-center gap-3">
-            <HardDrive className="h-8 w-8 text-amber-500 shrink-0" />
-            <div>
-              <div className="font-bold text-lg">{snapshots.length} Snapshots</div>
-              <div className="text-xs text-muted-foreground">Stored History</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Automated Schedule Settings */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <Sparkles className="h-8 w-8 text-primary shrink-0 mt-1" />
-              <div>
-                <h3 className="font-bold text-base flex items-center gap-2">
-                  Automated Daily Local & Cloud Backup
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Automatically generates daily database snapshots every 24 hours. Prevents data loss by saving full state snapshots locally and syncing with Supabase backups.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <Label htmlFor="auto-backup-switch" className="text-sm font-medium">
-                {autoBackupEnabled ? "Auto Backup Enabled" : "Auto Backup Disabled"}
-              </Label>
-              <Switch
-                id="auto-backup-switch"
-                checked={autoBackupEnabled}
-                onCheckedChange={handleToggleAutoBackup}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Backup Snapshot History */}
-      {snapshots.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <History className="h-5 w-5 text-primary" /> Saved Backup Snapshots ({snapshots.length})
-            </CardTitle>
-            <CardDescription>
-              Stored local snapshots ready for single-click download or full restoration
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
-              {snapshots.map((snap) => (
-                <div
-                  key={snap.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors gap-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <Save className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium text-sm flex items-center gap-2">
-                        {format(new Date(snap.exported_at), "PPpp")}
-                        <Badge variant={snap.type === "auto" ? "secondary" : "default"} className="text-[10px]">
-                          {snap.type === "auto" ? "Automated" : "Manual"}
-                        </Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {snap.total_records.toLocaleString()} records across {Object.keys(snap.tables || {}).length} tables
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => exportAsJSON(snap, getExportFilename("snapshot", "json"))}
-                    >
-                      <Download className="h-3.5 w-3.5 mr-1" /> JSON
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleRestoreFromSnapshot(snap)}
-                    >
-                      <Upload className="h-3.5 w-3.5 mr-1 text-emerald-500" /> Preview Restore
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive hover:bg-destructive/10"
-                      onClick={() => handleDeleteSnapshot(snap.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Progress value={progress.value} />
           </CardContent>
         </Card>
       )}
 
-      {/* Per-Table Exporter */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={<CheckCircle2 className="h-7 w-7 text-primary" />}
+          value={countsLoading ? "…" : totalRows.toLocaleString()}
+          caption="Live database records"
+        />
+        <StatCard
+          icon={<TableIcon className="h-7 w-7 text-primary" />}
+          value={String(BACKUP_TABLES.length)}
+          caption="Tables covered"
+        />
+        <StatCard
+          icon={<HardDrive className="h-7 w-7 text-primary" />}
+          value={`${snapshots.length}/${MAX_SNAPSHOTS}`}
+          caption="Daily snapshots stored"
+        />
+        <StatCard
+          icon={<ShieldCheck className="h-7 w-7 text-primary" />}
+          value={restoreMode === "replace" ? "Guarded" : "Safe mode"}
+          caption="Restores upsert by default"
+        />
+      </div>
+
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-4">
+            <Shield className="mt-1 h-8 w-8 shrink-0 text-primary" />
             <div>
-              <CardTitle className="text-base flex items-center gap-2">
-                <FileJson className="h-5 w-5 text-primary" /> Table-by-Table Data Dump
-              </CardTitle>
-              <CardDescription>Export individual database tables as JSON, CSV, or raw SQL INSERT statements</CardDescription>
+              <h2 className="font-display text-lg font-bold">Automatic daily snapshots</h2>
+              <p className="max-w-2xl text-sm text-muted-foreground">
+                One snapshot is captured per day when an admin opens this page, and the newest{" "}
+                {MAX_SNAPSHOTS} days are retained — so you can always roll back to yesterday, or
+                the day before. Snapshots live in this browser's secure local storage; download
+                them for off-site copies.
+              </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => refetchCounts()}>
-              <RefreshCw className={countsLoading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-            </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 max-h-[420px] overflow-y-auto pr-2">
-            {EXPORTABLE_TABLES.map((table) => {
-              const count = (counts as any)[table.key] ?? 0;
-              const isExporting = exporting?.startsWith(table.key);
-              return (
-                <div
-                  key={table.key}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors gap-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{table.icon}</span>
-                    <div>
-                      <div className="font-medium text-sm flex items-center gap-2">
-                        {table.label}
-                        {table.sensitive && (
-                          <Badge variant="destructive" className="text-[10px] h-4">
-                            Protected
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {count.toLocaleString()} records
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!!isExporting}
-                      onClick={() => handleExport(table.key, "json")}
-                    >
-                      {isExporting && exporting?.includes("json") ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <FileJson className="h-3 w-3" />
-                      )}
-                      <span className="ml-1">JSON</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!!isExporting}
-                      onClick={() => handleExport(table.key, "csv")}
-                    >
-                      {isExporting && exporting?.includes("csv") ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <FileText className="h-3 w-3" />
-                      )}
-                      <span className="ml-1">CSV</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!!isExporting}
-                      onClick={() => handleExport(table.key, "sql")}
-                    >
-                      {isExporting && exporting?.includes("sql") ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <FileCode className="h-3 w-3 text-blue-500" />
-                      )}
-                      <span className="ml-1">SQL</span>
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch id="auto-backup" checked={autoEnabled} onCheckedChange={toggleAuto} />
+              <Label htmlFor="auto-backup" className="text-sm font-medium">
+                {autoEnabled ? "Enabled" : "Paused"}
+              </Label>
+            </div>
+            <Button variant="outline" onClick={handleManualSnapshot} disabled={busy !== null}>
+              {busy === "snapshot" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              Snapshot now
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Import / Restore Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Upload className="h-5 w-5 text-primary" /> Database Restoration Engine
-          </CardTitle>
-          <CardDescription>
-            Upload a previously generated JSON backup file or select a saved snapshot above
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="border-2 border-dashed border-border/50 rounded-xl p-6 text-center hover:border-primary/40 transition-colors">
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleFileSelect}
-              className="hidden"
-              id="import-input"
-            />
-            <label htmlFor="import-input" className="cursor-pointer">
-              <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm font-medium">Click to select a backup JSON file</p>
-              <p className="text-xs text-muted-foreground">
-                Supports GameFlex full database dumps and local snapshots
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <History className="h-4 w-4 text-primary" /> Snapshot history
+            </CardTitle>
+            <CardDescription>
+              Restore straight from a stored day, or download it as a file first.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {snapshots.length === 0 && (
+              <p className="rounded-lg border border-dashed border-border/60 p-6 text-center text-sm text-muted-foreground">
+                No snapshots yet. Use “Snapshot now” to capture the first one.
               </p>
-            </label>
-          </div>
+            )}
+            {snapshots.map((snapshot) => (
+              <div
+                key={snapshot.id}
+                className="flex flex-col gap-3 rounded-lg border border-border/60 bg-secondary/30 p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-sm font-semibold">
+                      {format(new Date(snapshot.exported_at), "EEE d MMM, HH:mm")}
+                    </span>
+                    <Badge variant={snapshot.type === "auto" ? "secondary" : "default"}>
+                      {snapshot.type === "auto" ? "Daily" : "Manual"}
+                    </Badge>
+                  </div>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {snapshot.total_records.toLocaleString()} records ·{" "}
+                    {(snapshot.size_bytes / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRestoreFromSnapshot(snapshot.id)}
+                  >
+                    <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Restore
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Download snapshot"
+                    onClick={() => handleDownloadSnapshot(snapshot.id)}
+                  >
+                    <FileJson className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Delete snapshot"
+                    onClick={() => handleDeleteSnapshot(snapshot.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
 
-          {importPreview && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
-                <p className="text-sm text-amber-500">
-                  Restoration performs upserts on restorable tables. Records with matching primary IDs will be updated with snapshot data.
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Upload className="h-4 w-4 text-primary" /> Restore from a file
+            </CardTitle>
+            <CardDescription>
+              Accepts a GameFlex JSON backup or a SQL dump. Only INSERT statements are read — any
+              DROP, DELETE or TRUNCATE lines in a dump are ignored.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,.sql"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+            <Button variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-2 h-4 w-4" /> Choose backup file
+            </Button>
+
+            <div className="rounded-lg border border-border/60 bg-secondary/30 p-4 text-sm">
+              <p className="flex items-center gap-2 font-semibold">
+                <ShieldCheck className="h-4 w-4 text-primary" /> Safe by default
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Restores insert missing rows and update existing ones by id. Nothing is deleted
+                unless you switch on replace mode and type the confirmation phrase.
+              </p>
+            </div>
+
+            {lastResult && (
+              <div className="space-y-2 rounded-lg border border-border/60 p-4">
+                <p className="text-sm font-semibold">
+                  Last restore · {lastResult.totalWritten.toLocaleString()} rows written
+                </p>
+                <div className="max-h-40 space-y-1 overflow-y-auto text-xs">
+                  {lastResult.tables
+                    .filter((t) => t.rows > 0)
+                    .map((t) => (
+                      <div key={t.table} className="flex items-center justify-between gap-2">
+                        <span className="truncate">{label(t.table)}</span>
+                        <span className={t.error ? "text-destructive" : "text-muted-foreground"}>
+                          {t.error
+                            ? t.error
+                            : `${t.written} written${t.deleted ? `, ${t.deleted} removed` : ""}`}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base">Per-table export</CardTitle>
+            <CardDescription>Download any single table as JSON or CSV.</CardDescription>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => refetchCounts()}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${countsLoading ? "animate-spin" : ""}`} /> Refresh
+          </Button>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {BACKUP_TABLES.map((table) => (
+            <div
+              key={table}
+              className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-secondary/20 p-3"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{label(table)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {(counts[table] ?? 0).toLocaleString()} rows
                 </p>
               </div>
+              <div className="flex shrink-0 gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busy !== null}
+                  onClick={() => handleTableExport(table, "json")}
+                >
+                  JSON
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busy !== null}
+                  onClick={() => handleTableExport(table, "csv")}
+                >
+                  CSV
+                </Button>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
-              <div className="rounded-lg border border-border/50 divide-y divide-border/30 max-h-[300px] overflow-y-auto">
-                {Object.entries(importPreview.tables ?? {}).map(([table, rows]: any) => (
-                  <div
-                    key={table}
-                    className="flex items-center justify-between px-4 py-2.5 text-sm"
-                  >
-                    <span className="font-medium">{table}</span>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={RESTORABLE_TABLES.includes(table) ? "default" : "secondary"}>
-                        {RESTORABLE_TABLES.includes(table) ? "Will Restore" : "Read-Only"}
-                      </Badge>
-                      <span className="text-muted-foreground">{(rows || []).length} rows</span>
-                    </div>
+      <Dialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Review restore</DialogTitle>
+            <DialogDescription className="truncate">{pending?.source}</DialogDescription>
+          </DialogHeader>
+
+          {summary && (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-border/60 bg-secondary/30 p-3 text-sm">
+                <span className="font-semibold">{summary.totalRows.toLocaleString()}</span> rows
+                across <span className="font-semibold">{summary.known.length}</span> restorable
+                table(s).
+              </div>
+
+              <div className="max-h-48 space-y-1 overflow-y-auto text-xs">
+                {summary.known.map((t) => (
+                  <div key={t.table} className="flex items-center justify-between gap-2">
+                    <span className="truncate">{label(t.table)}</span>
+                    <span className="text-muted-foreground">{t.rows.toLocaleString()} rows</span>
                   </div>
                 ))}
               </div>
 
-              {importPreview.exported_at && (
-                <p className="text-xs text-muted-foreground">
-                  Snapshot created at: {format(new Date(importPreview.exported_at), "PPpp")}
+              {summary.unknown.length > 0 && (
+                <p className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                  Skipping unrecognised table(s):{" "}
+                  {summary.unknown.map((t) => t.table).join(", ")}
                 </p>
               )}
 
-              <div className="flex gap-2 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setImportPreview(null);
-                    setImportFile(null);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" /> Cancel Preview
-                </Button>
-                <Button onClick={handleRestore} disabled={restoring}>
-                  {restoring ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4 mr-2" />
-                  )}
-                  Execute Database Restore
-                </Button>
+              <div className="space-y-3 rounded-lg border border-border/60 p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <Label htmlFor="replace-mode" className="text-sm font-semibold">
+                      Replace mode
+                    </Label>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Off: only insert and update (nothing can be lost). On: also delete rows
+                      missing from this backup, in the restored tables only.
+                    </p>
+                  </div>
+                  <Switch
+                    id="replace-mode"
+                    checked={restoreMode === "replace"}
+                    onCheckedChange={(checked) => {
+                      setRestoreMode(checked ? "replace" : "merge");
+                      setConfirmText("");
+                    }}
+                  />
+                </div>
+
+                {restoreMode === "replace" && (
+                  <div className="space-y-2">
+                    <p className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs">
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
+                      This deletes live rows that are not in the backup. Take a fresh snapshot
+                      first — then type <strong>{CONFIRM_PHRASE}</strong> to unlock.
+                    </p>
+                    <Input
+                      value={confirmText}
+                      onChange={(event) => setConfirmText(event.target.value)}
+                      placeholder={CONFIRM_PHRASE}
+                      aria-label="Confirmation phrase"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPending(null)} disabled={restoring}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRestore}
+              disabled={restoring || replaceBlocked || (summary?.known.length ?? 0) === 0}
+              variant={restoreMode === "replace" ? "destructive" : "default"}
+            >
+              {restoring ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RotateCcw className="mr-2 h-4 w-4" />
+              )}
+              {restoreMode === "replace" ? "Replace and restore" : "Restore safely"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+function StatCard({
+  icon,
+  value,
+  caption,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  caption: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-3 p-4">
+        <div className="shrink-0">{icon}</div>
+        <div className="min-w-0">
+          <div className="font-display truncate text-lg font-bold">{value}</div>
+          <div className="truncate text-xs text-muted-foreground">{caption}</div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
