@@ -6,10 +6,23 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+// Self-hosting (Contabo VPS / Docker) builds a plain Node server instead of the
+// default Cloudflare worker output. Trigger it with: DEPLOY_TARGET=node bun run build
+const isNodeTarget = process.env.DEPLOY_TARGET === "node";
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+  },
+  ...(isNodeTarget ? { nitro: { preset: "node-server" } } : {}),
+  vite: {
+    build: {
+      target: "es2022",
+      cssCodeSplit: true,
+      reportCompressedSize: false,
+      chunkSizeWarningLimit: 900,
+    },
   },
 });

@@ -1,24 +1,13 @@
+// @ts-nocheck
+import { pageSeo } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
+import Page from "@/pages/Home";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () =>
+    pageSeo({
+      title: "GameFlex Esports | Tournaments & Competitions",
+      description: "Compete in FIFA, Mobile Legends, and Call of Duty tournaments to win cash prizes.",
+    }),
+  component: Page,
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
