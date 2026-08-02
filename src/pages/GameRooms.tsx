@@ -104,6 +104,11 @@ const GameRooms = () => {
           </div>
         ) : gameRooms && gameRooms.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
+            <div className="md:col-span-2 text-xs text-muted-foreground">
+              {lobbyStats.lobbies} lobby(ies) · {lobbyStats.seatsLeft} seats left
+              {lobbyStats.overflowLobbies > 0 &&
+                ` · ${lobbyStats.overflowLobbies} overflow lobby(ies) opened automatically`}
+            </div>
             {lobbies.map((room: any) => {
               const isExpired = new Date(room.expires_at) < new Date();
               const isMyRoom =
@@ -122,6 +127,7 @@ const GameRooms = () => {
                         <CardTitle className="flex items-center gap-2">
                           {platformIcons[room.platform]}
                           {room.tournaments?.title || "Tournament"}
+                          <span className="text-primary font-display">Lobby {room.lobbyTag}</span>
                         </CardTitle>
                         <CardDescription>
                           Round {room.matches?.round || "?"} - Match{" "}
@@ -129,6 +135,14 @@ const GameRooms = () => {
                         </CardDescription>
                       </div>
                       <div className="flex flex-col items-end gap-1">
+                        <Badge variant={room.isFull ? "destructive" : "outline"}>
+                          {room.occupancy}/{room.capacity} {room.isFull ? "full" : "seats"}
+                        </Badge>
+                        {room.isOverflow && (
+                          <Badge variant="secondary" className="text-[10px] uppercase">
+                            Overflow lobby
+                          </Badge>
+                        )}
                         <Badge variant={room.matches?.status === "live" ? "default" : "secondary"}>
                           {room.matches?.status || "scheduled"}
                         </Badge>
