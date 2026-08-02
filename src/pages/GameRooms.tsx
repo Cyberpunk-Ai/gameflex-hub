@@ -10,6 +10,7 @@ import { Gamepad2, Copy, Clock, Monitor, Smartphone, Laptop, Tv } from "lucide-r
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow, format } from "date-fns";
 import { mockGameRooms } from "@/lib/mock-data";
+import { assignLobbyNumbers, summarizeLobbies } from "@/lib/lobby/overflow";
 
 const platformIcons: Record<string, React.ReactNode> = {
   playstation: <Tv className="w-5 h-5" />,
@@ -60,6 +61,10 @@ const GameRooms = () => {
       }));
     },
   });
+
+  // Number lobbies per tournament (#1, #2, #3 …) so overflow lobbies are obvious.
+  const lobbies = assignLobbyNumbers(gameRooms as any[]);
+  const lobbyStats = summarizeLobbies(lobbies);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
