@@ -42,6 +42,8 @@ import {
   Square,
   Loader2,
   Coins,
+  Users,
+  UserPlus,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
@@ -55,6 +57,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { STORAGE_BUCKETS } from "@/integrations/supabase/storage-setup";
 import { formatDistanceToNow } from "date-fns";
+import { socialService } from "@/services/social/SocialService";
 
 export default function SocialProfile() {
   const { user, profile, updateProfile, refreshProfile, isLoading: authLoading } = useAuth();
@@ -64,7 +67,7 @@ export default function SocialProfile() {
   const queryClient = useQueryClient();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  const [tab, setTab] = useState<"posts" | "reels" | "saved" | "achievements">("posts");
+  const [tab, setTab] = useState<"posts" | "reels" | "friends" | "saved" | "achievements">("posts");
   const [viewMode, setViewMode] = useState<"grid" | "cards">("grid");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
@@ -118,6 +121,19 @@ export default function SocialProfile() {
       return savedData ?? [];
     },
   });
+
+  // Fetch Friends' Posts (mutual follows, falling back to people you follow)
+  const {
+    data: friendsFeed,
+    isLoading: friendsLoading,
+  } = useQuery({
+    queryKey: ["friends-feed", user?.id],
+    enabled: !!user && tab === "friends",
+    staleTime: 30_000,
+    queryFn: () => socialService.getFriendsFeed(user!.id, 30),
+  });
+
+  const friendPosts = friendsFeed?.statuses ?? [];
 
   // Fetch Counts (Followers, Following, Posts)
   const { data: counts, isLoading: countsLoading } = useQuery({
@@ -632,6 +648,7 @@ export default function SocialProfile() {
             {[
               { id: "posts" as const, label: "POSTS", icon: Grid3x3 },
               { id: "reels" as const, label: "FLEXES", icon: Film },
+              { id: "friends" as const, label: "FRIENDS", icon: Users },
               { id: "saved" as const, label: "SAVED", icon: Bookmark },
               { id: "achievements" as const, label: "ACHIEVEMENTS", icon: Trophy },
             ].map((t) => (
@@ -685,8 +702,124 @@ export default function SocialProfile() {
           </motion.div>
         )}
 
+        {/* FRIENDS TAB */}
+        {tab === "friends" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            {friendsLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-40 rounded-2xl" />
+                ))}
+              </div>
+            ) : friendPosts.length === 0 ? (
+              <div className="py-16 text-center border border-dashed border-border/60 rounded-2xl mx-4 md:mx-0 p-8">
+                <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-3">
+                  <Users className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="font-display font-bold text-lg mb-1">No Friend Posts Yet</h3>
+                <p className="text-muted-foreground text-xs max-w-xs mx-auto mb-4">
+                  Follow other players and get followed back to unlock a feed of your squad's
+                  latest highlights right here.
+                </p>
+                <Button size="sm" asChild>
+                  <Link to="/social/friends">
+                    <UserPlus className="h-4 w-4 mr-1.5" /> Find Friends
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between px-4 md:px-0">
+                  <p className="text-xs text-muted-foreground">
+                    {friendPosts.length} recent post{friendPosts.length === 1 ? "" : "s"} from{" "}
+                    {friendsFeed?.friendCount ?? 0}{" "}
+                    {friendsFeed?.usedFallback ? "player(s) you follow" : "friend(s)"}
+                  </p>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/social/friends">Manage</Link>
+                  </Button>
+                </div>
+
+                {friendPosts.map((post: any) => (
+                  <Card
+                    key={post.id}
+                    className="p-4 mx-4 md:mx-0 border-border/60 hover:border-primary/40 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar className="h-9 w-9 border border-border/60">
+                        <AvatarImage src={post.profiles?.avatar_url ?? undefined} />
+                        <AvatarFallback>
+                          {(post.profiles?.username ?? "GF").slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          to={`/social/u/${post.profiles?.username ?? post.user_id}`}
+                          className="text-sm font-semibold hover:text-primary transition-colors truncate block"
+                        >
+                          {post.profiles?.username ?? "Player"}
+                        </Link>
+                        <p className="text-[11px] text-muted-foreground">
+                          {post.created_at
+                            ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true })
+                            : ""}
+                        </p>
+                      </div>
+                      <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
+                        {friendsFeed?.usedFallback ? "Following" : "Friend"}
+                      </Badge>
+                    </div>
+
+                    {post.content && (
+                      <p className="text-sm text-foreground/90 mb-3 whitespace-pre-wrap">
+                        {post.content}
+                      </p>
+                    )}
+
+                    {post.media_url &&
+                      (post.media_type === "video" ? (
+                        <video
+                          src={post.media_url}
+                          controls
+                          playsInline
+                          className="w-full rounded-xl bg-secondary max-h-[420px] object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={optimizeImageUrl(post.media_url, 800)}
+                          alt={post.content ? `Post by ${post.profiles?.username}` : "Friend post"}
+                          loading="lazy"
+                          className="w-full rounded-xl bg-secondary max-h-[420px] object-cover"
+                        />
+                      ))}
+
+                    <div className="flex items-center gap-5 mt-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
+                        <Heart
+                          className={cn("h-4 w-4", post.liked && "fill-primary text-primary")}
+                        />
+                        {post._count?.likes ?? post.likes_count ?? 0}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <MessageCircle className="h-4 w-4" />
+                        {post._count?.comments ?? post.comments_count ?? 0}
+                      </span>
+                      <button
+                        onClick={() => setSelectedPost(post)}
+                        className="ml-auto font-medium hover:text-primary transition-colors"
+                      >
+                        View post
+                      </button>
+                    </div>
+                  </Card>
+                ))}
+              </>
+            )}
+          </motion.div>
+        )}
+
         {/* POSTS, FLEXES & SAVED */}
-        {tab !== "achievements" && (
+        {tab !== "achievements" && tab !== "friends" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {postsLoading ? (
               <div className="grid grid-cols-3 gap-1 md:gap-2">
