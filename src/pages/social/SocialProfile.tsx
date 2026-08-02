@@ -563,7 +563,7 @@ export default function SocialProfile() {
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 {profile?.game_handle && (
                   <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 rounded-lg font-medium text-xs bg-secondary/80">
-                    <Gamepad2 className="h-3.5 w-3.5 text-primary" />
+                    <Trophy className="h-3.5 w-3.5 text-primary" />
                     {profile.game_handle}
                   </Badge>
                 )}
