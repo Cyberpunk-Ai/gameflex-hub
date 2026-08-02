@@ -104,7 +104,7 @@ const GameRooms = () => {
           </div>
         ) : gameRooms && gameRooms.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
-            {gameRooms.map((room: any) => {
+            {lobbies.map((room: any) => {
               const isExpired = new Date(room.expires_at) < new Date();
               const isMyRoom =
                 room.matches?.player1_id === user.id || room.matches?.player2_id === user.id;
