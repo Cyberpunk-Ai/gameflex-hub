@@ -10,33 +10,911 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SplatRouteImport } from './routes/$'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AchievementsRouteImport } from './routes/achievements'
+import { Route as ActivityRouteImport } from './routes/activity'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ApiRouteImport } from './routes/api'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CreateRouteImport } from './routes/create'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as FairPlayRouteImport } from './routes/fair-play'
+import { Route as FaqsRouteImport } from './routes/faqs'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as FriendsRouteImport } from './routes/friends'
+import { Route as GameRoomsRouteImport } from './routes/game-rooms'
+import { Route as HelpRouteImport } from './routes/help'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as LiveRouteImport } from './routes/live'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as MyMatchesRouteImport } from './routes/my-matches'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ReelsRouteImport } from './routes/reels'
+import { Route as ReferralsRouteImport } from './routes/referrals'
+import { Route as RefundRouteImport } from './routes/refund'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ReportRouteImport } from './routes/report'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RewardsRouteImport } from './routes/rewards'
+import { Route as SavedRouteImport } from './routes/saved'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SocialRouteImport } from './routes/social'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as TeamsRouteImport } from './routes/teams'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as TrendingRouteImport } from './routes/trending'
+import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAchievementsRouteImport } from './routes/admin.achievements'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
+import { Route as AdminBackupRouteImport } from './routes/admin.backup'
+import { Route as AdminGameRoomsRouteImport } from './routes/admin.game-rooms'
+import { Route as AdminLeaderboardRouteImport } from './routes/admin.leaderboard'
+import { Route as AdminMarketplaceRouteImport } from './routes/admin.marketplace'
+import { Route as AdminMatchesRouteImport } from './routes/admin.matches'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminReferralsRouteImport } from './routes/admin.referrals'
+import { Route as AdminRegistrationsRouteImport } from './routes/admin.registrations'
+import { Route as AdminRewardsRouteImport } from './routes/admin.rewards'
+import { Route as AdminRolesRouteImport } from './routes/admin.roles'
+import { Route as AdminSupportRouteImport } from './routes/admin.support'
+import { Route as AdminTournamentsRouteImport } from './routes/admin.tournaments'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as CreatorIdRouteImport } from './routes/creator.$id'
+import { Route as PlayerIdRouteImport } from './routes/player.$id'
+import { Route as PostIdRouteImport } from './routes/post.$id'
+import { Route as SocialIndexRouteImport } from './routes/social.index'
+import { Route as SocialProfileRouteImport } from './routes/social.profile'
+import { Route as SocialSettingsRouteImport } from './routes/social.settings'
+import { Route as StoriesIndexRouteImport } from './routes/stories.index'
+import { Route as StoriesNewRouteImport } from './routes/stories.new'
+import { Route as TournamentsIndexRouteImport } from './routes/tournaments.index'
+import { Route as TournamentsIdRouteImport } from './routes/tournaments.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AchievementsRoute = AchievementsRouteImport.update({
+  id: '/achievements',
+  path: '/achievements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivityRoute = ActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRoute = ApiRouteImport.update({
+  id: '/api',
+  path: '/api',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateRoute = CreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FairPlayRoute = FairPlayRouteImport.update({
+  id: '/fair-play',
+  path: '/fair-play',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqsRoute = FaqsRouteImport.update({
+  id: '/faqs',
+  path: '/faqs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FriendsRoute = FriendsRouteImport.update({
+  id: '/friends',
+  path: '/friends',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GameRoomsRoute = GameRoomsRouteImport.update({
+  id: '/game-rooms',
+  path: '/game-rooms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyMatchesRoute = MyMatchesRouteImport.update({
+  id: '/my-matches',
+  path: '/my-matches',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReelsRoute = ReelsRouteImport.update({
+  id: '/reels',
+  path: '/reels',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReferralsRoute = ReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundRoute = RefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportRoute = ReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RewardsRoute = RewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SocialRoute = SocialRouteImport.update({
+  id: '/social',
+  path: '/social',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamsRoute = TeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrendingRoute = TrendingRouteImport.update({
+  id: '/trending',
+  path: '/trending',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletRoute = WalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAchievementsRoute = AdminAchievementsRouteImport.update({
+  id: '/achievements',
+  path: '/achievements',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBackupRoute = AdminBackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminGameRoomsRoute = AdminGameRoomsRouteImport.update({
+  id: '/game-rooms',
+  path: '/game-rooms',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLeaderboardRoute = AdminLeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMarketplaceRoute = AdminMarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMatchesRoute = AdminMatchesRouteImport.update({
+  id: '/matches',
+  path: '/matches',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReferralsRoute = AdminReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRegistrationsRoute = AdminRegistrationsRouteImport.update({
+  id: '/registrations',
+  path: '/registrations',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRewardsRoute = AdminRewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRolesRoute = AdminRolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTournamentsRoute = AdminTournamentsRouteImport.update({
+  id: '/tournaments',
+  path: '/tournaments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const CreatorIdRoute = CreatorIdRouteImport.update({
+  id: '/creator/$id',
+  path: '/creator/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayerIdRoute = PlayerIdRouteImport.update({
+  id: '/player/$id',
+  path: '/player/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostIdRoute = PostIdRouteImport.update({
+  id: '/post/$id',
+  path: '/post/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SocialIndexRoute = SocialIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SocialRoute,
+} as any)
+const SocialProfileRoute = SocialProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => SocialRoute,
+} as any)
+const SocialSettingsRoute = SocialSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => SocialRoute,
+} as any)
+const StoriesIndexRoute = StoriesIndexRouteImport.update({
+  id: '/stories/',
+  path: '/stories/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StoriesNewRoute = StoriesNewRouteImport.update({
+  id: '/stories/new',
+  path: '/stories/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentsIndexRoute = TournamentsIndexRouteImport.update({
+  id: '/tournaments/',
+  path: '/tournaments/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentsIdRoute = TournamentsIdRouteImport.update({
+  id: '/tournaments/$id',
+  path: '/tournaments/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/about': typeof AboutRoute
+  '/achievements': typeof AchievementsRoute
+  '/activity': typeof ActivityRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/api': typeof ApiRoute
+  '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
+  '/create': typeof CreateRoute
+  '/dashboard': typeof DashboardRoute
+  '/explore': typeof ExploreRoute
+  '/fair-play': typeof FairPlayRoute
+  '/faqs': typeof FaqsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/friends': typeof FriendsRoute
+  '/game-rooms': typeof GameRoomsRoute
+  '/help': typeof HelpRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/live': typeof LiveRoute
+  '/login': typeof LoginRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/messages': typeof MessagesRoute
+  '/my-matches': typeof MyMatchesRoute
+  '/notifications': typeof NotificationsRoute
+  '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
+  '/reels': typeof ReelsRoute
+  '/referrals': typeof ReferralsRoute
+  '/refund': typeof RefundRoute
+  '/register': typeof RegisterRoute
+  '/report': typeof ReportRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/rewards': typeof RewardsRoute
+  '/saved': typeof SavedRoute
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
+  '/social': typeof SocialRouteWithChildren
+  '/support': typeof SupportRoute
+  '/teams': typeof TeamsRoute
+  '/terms': typeof TermsRoute
+  '/trending': typeof TrendingRoute
+  '/wallet': typeof WalletRoute
+  '/admin/achievements': typeof AdminAchievementsRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/backup': typeof AdminBackupRoute
+  '/admin/game-rooms': typeof AdminGameRoomsRoute
+  '/admin/leaderboard': typeof AdminLeaderboardRoute
+  '/admin/marketplace': typeof AdminMarketplaceRoute
+  '/admin/matches': typeof AdminMatchesRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/referrals': typeof AdminReferralsRoute
+  '/admin/registrations': typeof AdminRegistrationsRoute
+  '/admin/rewards': typeof AdminRewardsRoute
+  '/admin/roles': typeof AdminRolesRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/tournaments': typeof AdminTournamentsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/creator/$id': typeof CreatorIdRoute
+  '/player/$id': typeof PlayerIdRoute
+  '/post/$id': typeof PostIdRoute
+  '/social/profile': typeof SocialProfileRoute
+  '/social/settings': typeof SocialSettingsRoute
+  '/stories/new': typeof StoriesNewRoute
+  '/tournaments/$id': typeof TournamentsIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/social/': typeof SocialIndexRoute
+  '/stories/': typeof StoriesIndexRoute
+  '/tournaments/': typeof TournamentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/about': typeof AboutRoute
+  '/achievements': typeof AchievementsRoute
+  '/activity': typeof ActivityRoute
+  '/api': typeof ApiRoute
+  '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
+  '/create': typeof CreateRoute
+  '/dashboard': typeof DashboardRoute
+  '/explore': typeof ExploreRoute
+  '/fair-play': typeof FairPlayRoute
+  '/faqs': typeof FaqsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/friends': typeof FriendsRoute
+  '/game-rooms': typeof GameRoomsRoute
+  '/help': typeof HelpRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/live': typeof LiveRoute
+  '/login': typeof LoginRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/messages': typeof MessagesRoute
+  '/my-matches': typeof MyMatchesRoute
+  '/notifications': typeof NotificationsRoute
+  '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
+  '/reels': typeof ReelsRoute
+  '/referrals': typeof ReferralsRoute
+  '/refund': typeof RefundRoute
+  '/register': typeof RegisterRoute
+  '/report': typeof ReportRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/rewards': typeof RewardsRoute
+  '/saved': typeof SavedRoute
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
+  '/teams': typeof TeamsRoute
+  '/terms': typeof TermsRoute
+  '/trending': typeof TrendingRoute
+  '/wallet': typeof WalletRoute
+  '/admin/achievements': typeof AdminAchievementsRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/backup': typeof AdminBackupRoute
+  '/admin/game-rooms': typeof AdminGameRoomsRoute
+  '/admin/leaderboard': typeof AdminLeaderboardRoute
+  '/admin/marketplace': typeof AdminMarketplaceRoute
+  '/admin/matches': typeof AdminMatchesRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/referrals': typeof AdminReferralsRoute
+  '/admin/registrations': typeof AdminRegistrationsRoute
+  '/admin/rewards': typeof AdminRewardsRoute
+  '/admin/roles': typeof AdminRolesRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/tournaments': typeof AdminTournamentsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/creator/$id': typeof CreatorIdRoute
+  '/player/$id': typeof PlayerIdRoute
+  '/post/$id': typeof PostIdRoute
+  '/social/profile': typeof SocialProfileRoute
+  '/social/settings': typeof SocialSettingsRoute
+  '/stories/new': typeof StoriesNewRoute
+  '/tournaments/$id': typeof TournamentsIdRoute
+  '/admin': typeof AdminIndexRoute
+  '/social': typeof SocialIndexRoute
+  '/stories': typeof StoriesIndexRoute
+  '/tournaments': typeof TournamentsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/about': typeof AboutRoute
+  '/achievements': typeof AchievementsRoute
+  '/activity': typeof ActivityRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/api': typeof ApiRoute
+  '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
+  '/create': typeof CreateRoute
+  '/dashboard': typeof DashboardRoute
+  '/explore': typeof ExploreRoute
+  '/fair-play': typeof FairPlayRoute
+  '/faqs': typeof FaqsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/friends': typeof FriendsRoute
+  '/game-rooms': typeof GameRoomsRoute
+  '/help': typeof HelpRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/live': typeof LiveRoute
+  '/login': typeof LoginRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/messages': typeof MessagesRoute
+  '/my-matches': typeof MyMatchesRoute
+  '/notifications': typeof NotificationsRoute
+  '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
+  '/reels': typeof ReelsRoute
+  '/referrals': typeof ReferralsRoute
+  '/refund': typeof RefundRoute
+  '/register': typeof RegisterRoute
+  '/report': typeof ReportRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/rewards': typeof RewardsRoute
+  '/saved': typeof SavedRoute
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
+  '/social': typeof SocialRouteWithChildren
+  '/support': typeof SupportRoute
+  '/teams': typeof TeamsRoute
+  '/terms': typeof TermsRoute
+  '/trending': typeof TrendingRoute
+  '/wallet': typeof WalletRoute
+  '/admin/achievements': typeof AdminAchievementsRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/backup': typeof AdminBackupRoute
+  '/admin/game-rooms': typeof AdminGameRoomsRoute
+  '/admin/leaderboard': typeof AdminLeaderboardRoute
+  '/admin/marketplace': typeof AdminMarketplaceRoute
+  '/admin/matches': typeof AdminMatchesRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/referrals': typeof AdminReferralsRoute
+  '/admin/registrations': typeof AdminRegistrationsRoute
+  '/admin/rewards': typeof AdminRewardsRoute
+  '/admin/roles': typeof AdminRolesRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/tournaments': typeof AdminTournamentsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/creator/$id': typeof CreatorIdRoute
+  '/player/$id': typeof PlayerIdRoute
+  '/post/$id': typeof PostIdRoute
+  '/social/profile': typeof SocialProfileRoute
+  '/social/settings': typeof SocialSettingsRoute
+  '/stories/new': typeof StoriesNewRoute
+  '/tournaments/$id': typeof TournamentsIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/social/': typeof SocialIndexRoute
+  '/stories/': typeof StoriesIndexRoute
+  '/tournaments/': typeof TournamentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/about'
+    | '/achievements'
+    | '/activity'
+    | '/admin'
+    | '/api'
+    | '/auth'
+    | '/contact'
+    | '/create'
+    | '/dashboard'
+    | '/explore'
+    | '/fair-play'
+    | '/faqs'
+    | '/forgot-password'
+    | '/friends'
+    | '/game-rooms'
+    | '/help'
+    | '/how-it-works'
+    | '/leaderboard'
+    | '/live'
+    | '/login'
+    | '/marketplace'
+    | '/messages'
+    | '/my-matches'
+    | '/notifications'
+    | '/privacy'
+    | '/profile'
+    | '/reels'
+    | '/referrals'
+    | '/refund'
+    | '/register'
+    | '/report'
+    | '/reset-password'
+    | '/rewards'
+    | '/saved'
+    | '/search'
+    | '/settings'
+    | '/social'
+    | '/support'
+    | '/teams'
+    | '/terms'
+    | '/trending'
+    | '/wallet'
+    | '/admin/achievements'
+    | '/admin/analytics'
+    | '/admin/backup'
+    | '/admin/game-rooms'
+    | '/admin/leaderboard'
+    | '/admin/marketplace'
+    | '/admin/matches'
+    | '/admin/payments'
+    | '/admin/referrals'
+    | '/admin/registrations'
+    | '/admin/rewards'
+    | '/admin/roles'
+    | '/admin/support'
+    | '/admin/tournaments'
+    | '/admin/users'
+    | '/creator/$id'
+    | '/player/$id'
+    | '/post/$id'
+    | '/social/profile'
+    | '/social/settings'
+    | '/stories/new'
+    | '/tournaments/$id'
+    | '/admin/'
+    | '/social/'
+    | '/stories/'
+    | '/tournaments/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/$'
+    | '/about'
+    | '/achievements'
+    | '/activity'
+    | '/api'
+    | '/auth'
+    | '/contact'
+    | '/create'
+    | '/dashboard'
+    | '/explore'
+    | '/fair-play'
+    | '/faqs'
+    | '/forgot-password'
+    | '/friends'
+    | '/game-rooms'
+    | '/help'
+    | '/how-it-works'
+    | '/leaderboard'
+    | '/live'
+    | '/login'
+    | '/marketplace'
+    | '/messages'
+    | '/my-matches'
+    | '/notifications'
+    | '/privacy'
+    | '/profile'
+    | '/reels'
+    | '/referrals'
+    | '/refund'
+    | '/register'
+    | '/report'
+    | '/reset-password'
+    | '/rewards'
+    | '/saved'
+    | '/search'
+    | '/settings'
+    | '/support'
+    | '/teams'
+    | '/terms'
+    | '/trending'
+    | '/wallet'
+    | '/admin/achievements'
+    | '/admin/analytics'
+    | '/admin/backup'
+    | '/admin/game-rooms'
+    | '/admin/leaderboard'
+    | '/admin/marketplace'
+    | '/admin/matches'
+    | '/admin/payments'
+    | '/admin/referrals'
+    | '/admin/registrations'
+    | '/admin/rewards'
+    | '/admin/roles'
+    | '/admin/support'
+    | '/admin/tournaments'
+    | '/admin/users'
+    | '/creator/$id'
+    | '/player/$id'
+    | '/post/$id'
+    | '/social/profile'
+    | '/social/settings'
+    | '/stories/new'
+    | '/tournaments/$id'
+    | '/admin'
+    | '/social'
+    | '/stories'
+    | '/tournaments'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/about'
+    | '/achievements'
+    | '/activity'
+    | '/admin'
+    | '/api'
+    | '/auth'
+    | '/contact'
+    | '/create'
+    | '/dashboard'
+    | '/explore'
+    | '/fair-play'
+    | '/faqs'
+    | '/forgot-password'
+    | '/friends'
+    | '/game-rooms'
+    | '/help'
+    | '/how-it-works'
+    | '/leaderboard'
+    | '/live'
+    | '/login'
+    | '/marketplace'
+    | '/messages'
+    | '/my-matches'
+    | '/notifications'
+    | '/privacy'
+    | '/profile'
+    | '/reels'
+    | '/referrals'
+    | '/refund'
+    | '/register'
+    | '/report'
+    | '/reset-password'
+    | '/rewards'
+    | '/saved'
+    | '/search'
+    | '/settings'
+    | '/social'
+    | '/support'
+    | '/teams'
+    | '/terms'
+    | '/trending'
+    | '/wallet'
+    | '/admin/achievements'
+    | '/admin/analytics'
+    | '/admin/backup'
+    | '/admin/game-rooms'
+    | '/admin/leaderboard'
+    | '/admin/marketplace'
+    | '/admin/matches'
+    | '/admin/payments'
+    | '/admin/referrals'
+    | '/admin/registrations'
+    | '/admin/rewards'
+    | '/admin/roles'
+    | '/admin/support'
+    | '/admin/tournaments'
+    | '/admin/users'
+    | '/creator/$id'
+    | '/player/$id'
+    | '/post/$id'
+    | '/social/profile'
+    | '/social/settings'
+    | '/stories/new'
+    | '/tournaments/$id'
+    | '/admin/'
+    | '/social/'
+    | '/stories/'
+    | '/tournaments/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
+  AboutRoute: typeof AboutRoute
+  AchievementsRoute: typeof AchievementsRoute
+  ActivityRoute: typeof ActivityRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  ApiRoute: typeof ApiRoute
+  AuthRoute: typeof AuthRoute
+  ContactRoute: typeof ContactRoute
+  CreateRoute: typeof CreateRoute
+  DashboardRoute: typeof DashboardRoute
+  ExploreRoute: typeof ExploreRoute
+  FairPlayRoute: typeof FairPlayRoute
+  FaqsRoute: typeof FaqsRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  FriendsRoute: typeof FriendsRoute
+  GameRoomsRoute: typeof GameRoomsRoute
+  HelpRoute: typeof HelpRoute
+  HowItWorksRoute: typeof HowItWorksRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  LiveRoute: typeof LiveRoute
+  LoginRoute: typeof LoginRoute
+  MarketplaceRoute: typeof MarketplaceRoute
+  MessagesRoute: typeof MessagesRoute
+  MyMatchesRoute: typeof MyMatchesRoute
+  NotificationsRoute: typeof NotificationsRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
+  ReelsRoute: typeof ReelsRoute
+  ReferralsRoute: typeof ReferralsRoute
+  RefundRoute: typeof RefundRoute
+  RegisterRoute: typeof RegisterRoute
+  ReportRoute: typeof ReportRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  RewardsRoute: typeof RewardsRoute
+  SavedRoute: typeof SavedRoute
+  SearchRoute: typeof SearchRoute
+  SettingsRoute: typeof SettingsRoute
+  SocialRoute: typeof SocialRouteWithChildren
+  SupportRoute: typeof SupportRoute
+  TeamsRoute: typeof TeamsRoute
+  TermsRoute: typeof TermsRoute
+  TrendingRoute: typeof TrendingRoute
+  WalletRoute: typeof WalletRoute
+  CreatorIdRoute: typeof CreatorIdRoute
+  PlayerIdRoute: typeof PlayerIdRoute
+  PostIdRoute: typeof PostIdRoute
+  StoriesNewRoute: typeof StoriesNewRoute
+  TournamentsIdRoute: typeof TournamentsIdRoute
+  StoriesIndexRoute: typeof StoriesIndexRoute
+  TournamentsIndexRoute: typeof TournamentsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +926,600 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/achievements': {
+      id: '/achievements'
+      path: '/achievements'
+      fullPath: '/achievements'
+      preLoaderRoute: typeof AchievementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activity': {
+      id: '/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof ActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api': {
+      id: '/api'
+      path: '/api'
+      fullPath: '/api'
+      preLoaderRoute: typeof ApiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create': {
+      id: '/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof CreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fair-play': {
+      id: '/fair-play'
+      path: '/fair-play'
+      fullPath: '/fair-play'
+      preLoaderRoute: typeof FairPlayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faqs': {
+      id: '/faqs'
+      path: '/faqs'
+      fullPath: '/faqs'
+      preLoaderRoute: typeof FaqsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/friends': {
+      id: '/friends'
+      path: '/friends'
+      fullPath: '/friends'
+      preLoaderRoute: typeof FriendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/game-rooms': {
+      id: '/game-rooms'
+      path: '/game-rooms'
+      fullPath: '/game-rooms'
+      preLoaderRoute: typeof GameRoomsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-matches': {
+      id: '/my-matches'
+      path: '/my-matches'
+      fullPath: '/my-matches'
+      preLoaderRoute: typeof MyMatchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reels': {
+      id: '/reels'
+      path: '/reels'
+      fullPath: '/reels'
+      preLoaderRoute: typeof ReelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/referrals': {
+      id: '/referrals'
+      path: '/referrals'
+      fullPath: '/referrals'
+      preLoaderRoute: typeof ReferralsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund': {
+      id: '/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof RefundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report': {
+      id: '/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rewards': {
+      id: '/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof RewardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/social': {
+      id: '/social'
+      path: '/social'
+      fullPath: '/social'
+      preLoaderRoute: typeof SocialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teams': {
+      id: '/teams'
+      path: '/teams'
+      fullPath: '/teams'
+      preLoaderRoute: typeof TeamsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trending': {
+      id: '/trending'
+      path: '/trending'
+      fullPath: '/trending'
+      preLoaderRoute: typeof TrendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/achievements': {
+      id: '/admin/achievements'
+      path: '/achievements'
+      fullPath: '/admin/achievements'
+      preLoaderRoute: typeof AdminAchievementsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/backup': {
+      id: '/admin/backup'
+      path: '/backup'
+      fullPath: '/admin/backup'
+      preLoaderRoute: typeof AdminBackupRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/game-rooms': {
+      id: '/admin/game-rooms'
+      path: '/game-rooms'
+      fullPath: '/admin/game-rooms'
+      preLoaderRoute: typeof AdminGameRoomsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/leaderboard': {
+      id: '/admin/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/admin/leaderboard'
+      preLoaderRoute: typeof AdminLeaderboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/marketplace': {
+      id: '/admin/marketplace'
+      path: '/marketplace'
+      fullPath: '/admin/marketplace'
+      preLoaderRoute: typeof AdminMarketplaceRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/matches': {
+      id: '/admin/matches'
+      path: '/matches'
+      fullPath: '/admin/matches'
+      preLoaderRoute: typeof AdminMatchesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/referrals': {
+      id: '/admin/referrals'
+      path: '/referrals'
+      fullPath: '/admin/referrals'
+      preLoaderRoute: typeof AdminReferralsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/registrations': {
+      id: '/admin/registrations'
+      path: '/registrations'
+      fullPath: '/admin/registrations'
+      preLoaderRoute: typeof AdminRegistrationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/rewards': {
+      id: '/admin/rewards'
+      path: '/rewards'
+      fullPath: '/admin/rewards'
+      preLoaderRoute: typeof AdminRewardsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/roles': {
+      id: '/admin/roles'
+      path: '/roles'
+      fullPath: '/admin/roles'
+      preLoaderRoute: typeof AdminRolesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tournaments': {
+      id: '/admin/tournaments'
+      path: '/tournaments'
+      fullPath: '/admin/tournaments'
+      preLoaderRoute: typeof AdminTournamentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/creator/$id': {
+      id: '/creator/$id'
+      path: '/creator/$id'
+      fullPath: '/creator/$id'
+      preLoaderRoute: typeof CreatorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/player/$id': {
+      id: '/player/$id'
+      path: '/player/$id'
+      fullPath: '/player/$id'
+      preLoaderRoute: typeof PlayerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post/$id': {
+      id: '/post/$id'
+      path: '/post/$id'
+      fullPath: '/post/$id'
+      preLoaderRoute: typeof PostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/social/': {
+      id: '/social/'
+      path: '/'
+      fullPath: '/social/'
+      preLoaderRoute: typeof SocialIndexRouteImport
+      parentRoute: typeof SocialRoute
+    }
+    '/social/profile': {
+      id: '/social/profile'
+      path: '/profile'
+      fullPath: '/social/profile'
+      preLoaderRoute: typeof SocialProfileRouteImport
+      parentRoute: typeof SocialRoute
+    }
+    '/social/settings': {
+      id: '/social/settings'
+      path: '/settings'
+      fullPath: '/social/settings'
+      preLoaderRoute: typeof SocialSettingsRouteImport
+      parentRoute: typeof SocialRoute
+    }
+    '/stories/': {
+      id: '/stories/'
+      path: '/stories'
+      fullPath: '/stories/'
+      preLoaderRoute: typeof StoriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stories/new': {
+      id: '/stories/new'
+      path: '/stories/new'
+      fullPath: '/stories/new'
+      preLoaderRoute: typeof StoriesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournaments/': {
+      id: '/tournaments/'
+      path: '/tournaments'
+      fullPath: '/tournaments/'
+      preLoaderRoute: typeof TournamentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournaments/$id': {
+      id: '/tournaments/$id'
+      path: '/tournaments/$id'
+      fullPath: '/tournaments/$id'
+      preLoaderRoute: typeof TournamentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminAchievementsRoute: typeof AdminAchievementsRoute
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminBackupRoute: typeof AdminBackupRoute
+  AdminGameRoomsRoute: typeof AdminGameRoomsRoute
+  AdminLeaderboardRoute: typeof AdminLeaderboardRoute
+  AdminMarketplaceRoute: typeof AdminMarketplaceRoute
+  AdminMatchesRoute: typeof AdminMatchesRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminReferralsRoute: typeof AdminReferralsRoute
+  AdminRegistrationsRoute: typeof AdminRegistrationsRoute
+  AdminRewardsRoute: typeof AdminRewardsRoute
+  AdminRolesRoute: typeof AdminRolesRoute
+  AdminSupportRoute: typeof AdminSupportRoute
+  AdminTournamentsRoute: typeof AdminTournamentsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAchievementsRoute: AdminAchievementsRoute,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminBackupRoute: AdminBackupRoute,
+  AdminGameRoomsRoute: AdminGameRoomsRoute,
+  AdminLeaderboardRoute: AdminLeaderboardRoute,
+  AdminMarketplaceRoute: AdminMarketplaceRoute,
+  AdminMatchesRoute: AdminMatchesRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminReferralsRoute: AdminReferralsRoute,
+  AdminRegistrationsRoute: AdminRegistrationsRoute,
+  AdminRewardsRoute: AdminRewardsRoute,
+  AdminRolesRoute: AdminRolesRoute,
+  AdminSupportRoute: AdminSupportRoute,
+  AdminTournamentsRoute: AdminTournamentsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface SocialRouteChildren {
+  SocialProfileRoute: typeof SocialProfileRoute
+  SocialSettingsRoute: typeof SocialSettingsRoute
+  SocialIndexRoute: typeof SocialIndexRoute
+}
+
+const SocialRouteChildren: SocialRouteChildren = {
+  SocialProfileRoute: SocialProfileRoute,
+  SocialSettingsRoute: SocialSettingsRoute,
+  SocialIndexRoute: SocialIndexRoute,
+}
+
+const SocialRouteWithChildren =
+  SocialRoute._addFileChildren(SocialRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
+  AboutRoute: AboutRoute,
+  AchievementsRoute: AchievementsRoute,
+  ActivityRoute: ActivityRoute,
+  AdminRoute: AdminRouteWithChildren,
+  ApiRoute: ApiRoute,
+  AuthRoute: AuthRoute,
+  ContactRoute: ContactRoute,
+  CreateRoute: CreateRoute,
+  DashboardRoute: DashboardRoute,
+  ExploreRoute: ExploreRoute,
+  FairPlayRoute: FairPlayRoute,
+  FaqsRoute: FaqsRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  FriendsRoute: FriendsRoute,
+  GameRoomsRoute: GameRoomsRoute,
+  HelpRoute: HelpRoute,
+  HowItWorksRoute: HowItWorksRoute,
+  LeaderboardRoute: LeaderboardRoute,
+  LiveRoute: LiveRoute,
+  LoginRoute: LoginRoute,
+  MarketplaceRoute: MarketplaceRoute,
+  MessagesRoute: MessagesRoute,
+  MyMatchesRoute: MyMatchesRoute,
+  NotificationsRoute: NotificationsRoute,
+  PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
+  ReelsRoute: ReelsRoute,
+  ReferralsRoute: ReferralsRoute,
+  RefundRoute: RefundRoute,
+  RegisterRoute: RegisterRoute,
+  ReportRoute: ReportRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  RewardsRoute: RewardsRoute,
+  SavedRoute: SavedRoute,
+  SearchRoute: SearchRoute,
+  SettingsRoute: SettingsRoute,
+  SocialRoute: SocialRouteWithChildren,
+  SupportRoute: SupportRoute,
+  TeamsRoute: TeamsRoute,
+  TermsRoute: TermsRoute,
+  TrendingRoute: TrendingRoute,
+  WalletRoute: WalletRoute,
+  CreatorIdRoute: CreatorIdRoute,
+  PlayerIdRoute: PlayerIdRoute,
+  PostIdRoute: PostIdRoute,
+  StoriesNewRoute: StoriesNewRoute,
+  TournamentsIdRoute: TournamentsIdRoute,
+  StoriesIndexRoute: StoriesIndexRoute,
+  TournamentsIndexRoute: TournamentsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

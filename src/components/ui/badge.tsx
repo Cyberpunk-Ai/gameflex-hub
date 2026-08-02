@@ -1,19 +1,23 @@
 import * as React from "react";
+import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils";
-
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "whitespace-nowrap inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" +
+    " hover-elevate ",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
-        outline: "text-foreground",
+        default: "border-transparent bg-primary text-primary-foreground shadow-xs",
+        secondary: "border-transparent bg-secondary text-secondary-foreground",
+        destructive: "border-transparent bg-destructive text-destructive-foreground shadow-xs",
+        outline: "text-foreground border [border-color:var(--badge-outline)]",
+        // GameFlex-specific variants
+        live: "border-transparent bg-red-900/60 text-red-400 border border-red-500/30",
+        success: "border-transparent bg-green-900/60 text-green-400 border border-green-500/30",
+        warning: "border-transparent bg-yellow-900/60 text-yellow-400 border border-yellow-500/30",
+        info: "border-transparent bg-blue-900/60 text-blue-400 border border-blue-500/30",
+        premium: "border-transparent bg-purple-900/60 text-purple-400 border border-purple-500/30",
       },
     },
     defaultVariants: {
