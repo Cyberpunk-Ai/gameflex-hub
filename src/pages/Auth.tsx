@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2, Mail, Lock, User, Loader2 } from "lucide-react";
+import { Mail, Lock, User, Loader2 } from "lucide-react";
+import { GameFlexMark } from "@/components/brand/gameflex-mark";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -99,9 +100,7 @@ const Auth = () => {
       <Card className="w-full max-w-md relative z-10 border-border/50 bg-card/80 backdrop-blur-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/20 border border-primary/30">
-              <Gamepad2 className="w-8 h-8 text-primary" />
-            </div>
+            <GameFlexMark size="lg" />
           </div>
           <CardTitle className="text-2xl font-bold font-display">GameFlex</CardTitle>
           <CardDescription>Kenya's Esports Community Hub</CardDescription>

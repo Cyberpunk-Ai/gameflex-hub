@@ -183,6 +183,94 @@ export class SocialService {
       return [];
     }
   }
+
+  /** Mutual follows = friends. */
+  async getFriends(userId: string): Promise<Profile[]> {
+    try {
+      const [following, followers] = await Promise.all([
+        this.getFollowing(userId),
+        this.getFollowers(userId),
+      ]);
+      const followerIds = new Set(followers.filter(Boolean).map((p: any) => p.user_id ?? p.id));
+      return following
+        .filter(Boolean)
+        .filter((p: any) => followerIds.has(p.user_id ?? p.id)) as Profile[];
+    } catch {
+      return [];
+    }
+  }
+
+  async getFriendIds(userId: string): Promise<string[]> {
+    const friends = await this.getFriends(userId);
+    return friends.map((p: any) => p.user_id ?? p.id).filter(Boolean);
+  }
+
+  /**
+   * Posts authored by the user's friends (mutual follows). Falls back to the
+   * people the user follows when there are no mutuals yet, so the tab is never
+   * empty for someone who has only one-way follows.
+   */
+  async getFriendsFeed(
+    userId: string,
+    limit: number = 20,
+  ): Promise<{ statuses: StatusItem[]; friendCount: number; usedFallback: boolean }> {
+    try {
+      let ids = await this.getFriendIds(userId);
+      let usedFallback = false;
+
+      if (ids.length === 0) {
+        const following = await this.getFollowing(userId);
+        ids = following.filter(Boolean).map((p: any) => p.user_id ?? p.id).filter(Boolean);
+        usedFallback = ids.length > 0;
+      }
+
+      if (ids.length === 0) return { statuses: [], friendCount: 0, usedFallback: false };
+
+      const { data, error } = await supabase
+        .from("user_statuses")
+        .select("*, profiles!inner(user_id, username, avatar_url)")
+        .in("user_id", ids)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) return { statuses: [], friendCount: ids.length, usedFallback };
+
+      const statuses = (data ?? []) as unknown as StatusItem[];
+      const withCounts = await this.attachEngagement(statuses, userId);
+      return { statuses: withCounts, friendCount: ids.length, usedFallback };
+    } catch {
+      return { statuses: [], friendCount: 0, usedFallback: false };
+    }
+  }
+
+  /** Adds like/comment counts and the viewer's like state to a list of posts. */
+  async attachEngagement(statuses: StatusItem[], viewerId?: string): Promise<StatusItem[]> {
+    if (statuses.length === 0) return statuses;
+    const ids = statuses.map((s) => s.id);
+
+    try {
+      const [likes, comments] = await Promise.all([
+        supabase.from("status_likes").select("status_id, user_id").in("status_id", ids),
+        supabase.from("status_comments").select("status_id").in("status_id", ids),
+      ]);
+
+      const likeRows = (likes.data ?? []) as { status_id: string; user_id: string }[];
+      const commentRows = (comments.data ?? []) as { status_id: string }[];
+
+      return statuses.map((status) => ({
+        ...status,
+        _count: {
+          likes: likeRows.filter((l) => l.status_id === status.id).length,
+          comments: commentRows.filter((c) => c.status_id === status.id).length,
+        },
+        liked: viewerId
+          ? likeRows.some((l) => l.status_id === status.id && l.user_id === viewerId)
+          : false,
+      }));
+    } catch {
+      return statuses;
+    }
+  }
 }
 
 export const socialService = new SocialService();

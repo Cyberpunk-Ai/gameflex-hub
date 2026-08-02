@@ -10,6 +10,7 @@ import { Gamepad2, Copy, Clock, Monitor, Smartphone, Laptop, Tv } from "lucide-r
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow, format } from "date-fns";
 import { mockGameRooms } from "@/lib/mock-data";
+import { assignLobbyNumbers, summarizeLobbies } from "@/lib/lobby/overflow";
 
 const platformIcons: Record<string, React.ReactNode> = {
   playstation: <Tv className="w-5 h-5" />,
@@ -61,6 +62,10 @@ const GameRooms = () => {
     },
   });
 
+  // Number lobbies per tournament (#1, #2, #3 …) so overflow lobbies are obvious.
+  const lobbies = assignLobbyNumbers(gameRooms as any[]);
+  const lobbyStats = summarizeLobbies(lobbies);
+
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({
@@ -99,7 +104,12 @@ const GameRooms = () => {
           </div>
         ) : gameRooms && gameRooms.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
-            {gameRooms.map((room: any) => {
+            <div className="md:col-span-2 text-xs text-muted-foreground">
+              {lobbyStats.lobbies} lobby(ies) · {lobbyStats.seatsLeft} seats left
+              {lobbyStats.overflowLobbies > 0 &&
+                ` · ${lobbyStats.overflowLobbies} overflow lobby(ies) opened automatically`}
+            </div>
+            {lobbies.map((room: any) => {
               const isExpired = new Date(room.expires_at) < new Date();
               const isMyRoom =
                 room.matches?.player1_id === user.id || room.matches?.player2_id === user.id;
@@ -117,6 +127,7 @@ const GameRooms = () => {
                         <CardTitle className="flex items-center gap-2">
                           {platformIcons[room.platform]}
                           {room.tournaments?.title || "Tournament"}
+                          <span className="text-primary font-display">Lobby {room.lobbyTag}</span>
                         </CardTitle>
                         <CardDescription>
                           Round {room.matches?.round || "?"} - Match{" "}
@@ -124,6 +135,14 @@ const GameRooms = () => {
                         </CardDescription>
                       </div>
                       <div className="flex flex-col items-end gap-1">
+                        <Badge variant={room.isFull ? "destructive" : "outline"}>
+                          {room.occupancy}/{room.capacity} {room.isFull ? "full" : "seats"}
+                        </Badge>
+                        {room.isOverflow && (
+                          <Badge variant="secondary" className="text-[10px] uppercase">
+                            Overflow lobby
+                          </Badge>
+                        )}
                         <Badge variant={room.matches?.status === "live" ? "default" : "secondary"}>
                           {room.matches?.status || "scheduled"}
                         </Badge>

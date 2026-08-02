@@ -4,7 +4,8 @@ import { Link, useNavigate } from "@/lib/router-compat";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Eye, EyeOff, Phone, Lock, Trophy } from "lucide-react";
+import { Eye, EyeOff, Phone, Lock } from "lucide-react";
+import { GameFlexMark } from "@/components/brand/gameflex-mark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,9 +67,7 @@ export default function Login() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shadow-lg shadow-primary/30">
-              <Trophy className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <GameFlexMark size="sm" className="h-10 w-10" />
             <span className="font-display text-2xl font-bold">
               Game<span className="text-primary">Flex</span>
             </span>

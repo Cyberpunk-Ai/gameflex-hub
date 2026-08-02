@@ -1,7 +1,8 @@
 // @ts-nocheck
 import { useState } from "react";
 import { Link, useNavigate } from "@/lib/router-compat";
-import { Lock, Trophy, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff } from "lucide-react";
+import { GameFlexMark } from "@/components/brand/gameflex-mark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,9 +58,7 @@ export default function ResetPassword() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary">
-              <Trophy className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <GameFlexMark size="sm" className="h-10 w-10" />
             <span className="font-display text-2xl font-bold">
               Game<span className="text-primary">Flex</span>
             </span>
