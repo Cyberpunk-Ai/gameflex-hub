@@ -249,6 +249,33 @@ export default function AdminBackup() {
     exportAsJSON(snapshot.payload, getExportFilename("gameflex_snapshot", "json"));
   };
 
+  const handleDownloadSchema = () => {
+    downloadFile(
+      buildPlatformSchemaSql(),
+      getExportFilename("gameflex_schema", "sql"),
+      "application/sql",
+    );
+    toast.success("Schema migration script downloaded");
+  };
+
+  const handleCopySchema = async () => {
+    try {
+      await navigator.clipboard.writeText(buildPlatformSchemaSql());
+      toast.success("Schema SQL copied — paste it into your SQL editor and run");
+    } catch {
+      toast.error("Clipboard blocked — use Download .sql instead");
+    }
+  };
+
+  const handleDownloadSnapshotUnused = async (id: string) => {
+    const snapshot = await getSnapshot(id);
+    if (!snapshot) {
+      toast.error("Snapshot no longer available");
+      return;
+    }
+    exportAsJSON(snapshot.payload, getExportFilename("gameflex_snapshot", "json"));
+  };
+
   const handleRestoreFromSnapshot = async (id: string) => {
     const snapshot = await getSnapshot(id);
     if (!snapshot) {
