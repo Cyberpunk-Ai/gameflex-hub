@@ -17,6 +17,8 @@ import {
   RotateCcw,
   Shield,
   ShieldCheck,
+  Sparkles,
+  Copy,
   Table as TableIcon,
   Trash2,
   Upload,
@@ -54,6 +56,7 @@ import {
   toFullSqlDump,
 } from "@/lib/backup/engine";
 import { sqlDumpToPayload } from "@/lib/backup/sql-parser";
+import { PLATFORM_MIGRATIONS, buildPlatformSchemaSql } from "@/lib/backup/schema-sql";
 import {
   MAX_SNAPSHOTS,
   dayKey,
@@ -86,6 +89,10 @@ const TABLE_LABELS: Record<string, string> = {
   rewards: "Rewards & Redemptions",
   user_follows: "Follows",
   user_roles: "Roles & Permissions",
+  squads: "Squads",
+  squad_members: "Squad Rosters",
+  squad_invites: "Squad Invites",
+  squad_messages: "Squad Chat",
 };
 
 const label = (table: string) => TABLE_LABELS[table] ?? table;
