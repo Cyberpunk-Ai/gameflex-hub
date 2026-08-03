@@ -23,6 +23,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn, formatExternalUrl } from "@/lib/utils";
 import { mockTournaments } from "@/lib/mock-data";
 import { getLocalRegistrations } from "@/utils/local-registrations";
+import { StartCountdown } from "@/components/tournament/start-countdown";
+import { assignLobbyNumbers, summarizeLobbies } from "@/lib/lobby/overflow";
 
 const statusLabels: Record<string, string> = {
   live: "LIVE",
@@ -213,6 +215,28 @@ export default function TournamentDetail() {
     enabled: !!id && !!user,
   });
 
+  // Numbered lobbies for this tournament (#1, #2, #3 …) incl. overflow rooms.
+  const { data: tournamentRooms = [] } = useQuery({
+    queryKey: ["tournament-lobbies", id],
+    queryFn: async () => {
+      try {
+        const { data } = await supabase
+          .from("game_rooms")
+          .select("*")
+          .eq("tournament_id", id)
+          .order("created_at", { ascending: true });
+        return data ?? [];
+      } catch (e) {
+        console.warn("Tournament lobbies unavailable");
+        return [];
+      }
+    },
+    enabled: !!id,
+  });
+
+  const lobbies = assignLobbyNumbers(tournamentRooms as any[]);
+  const lobbyStats = summarizeLobbies(lobbies);
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
@@ -317,7 +341,19 @@ export default function TournamentDetail() {
                 <Gamepad2 className="h-4 w-4 text-primary" />
                 {tournament.game.toUpperCase()}
               </span>
+              {lobbies.length > 0 && (
+                <span className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-primary" />
+                  {lobbies.length} {lobbies.length === 1 ? "lobby" : "lobbies"} •{" "}
+                  {lobbies.map((lobby) => lobby.lobbyTag).join(" ")}
+                </span>
+              )}
             </div>
+            <StartCountdown
+              startDate={tournament.start_date}
+              status={tournament.status}
+              className="mt-5 inline-block"
+            />
           </div>
           <div className="text-center md:text-right">
             <div className="font-display text-4xl font-bold text-primary mb-1">
@@ -457,6 +493,52 @@ export default function TournamentDetail() {
                   )}
                 </div>
               </div>
+
+              {lobbies.length > 0 && (
+                <div className="rounded-xl bg-card border border-border/50 p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <h3 className="font-display font-bold">Lobbies</h3>
+                    <span className="text-xs text-muted-foreground">
+                      {lobbyStats.occupancy}/{lobbyStats.capacity} seats taken
+                      {lobbyStats.overflowLobbies > 0
+                        ? ` • ${lobbyStats.overflowLobbies} overflow`
+                        : ""}
+                    </span>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {lobbies.map((lobby) => (
+                      <div
+                        key={lobby.id}
+                        className="rounded-lg border border-border/60 bg-background/50 p-4"
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="font-display font-bold text-primary">
+                            Lobby {lobby.lobbyTag}
+                          </span>
+                          {lobby.isFull ? (
+                            <Badge variant="secondary">Full</Badge>
+                          ) : (
+                            <Badge variant="outline" className="border-primary/40 text-primary">
+                              {lobby.seatsLeft} open
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden mb-2">
+                          <div
+                            className="h-full bg-primary transition-all"
+                            style={{ width: `${lobby.fillPercent}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {lobby.occupancy}/{lobby.capacity} seats
+                          {lobby.isOverflow ? " • overflow lobby" : ""}
+                          {lobby.room_code ? ` • ${lobby.room_code}` : ""}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="rounded-xl bg-card border border-border/50 p-6">
               <h3 className="font-display font-bold mb-4">Prize Distribution</h3>
