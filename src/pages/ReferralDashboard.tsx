@@ -79,7 +79,7 @@ export default function ReferralDashboard() {
   const totalInvited = userReferrals.length;
   const verifiedCount = userReferrals.filter((r) => r.status === "completed").length;
   const pendingCount = userReferrals.filter((r) => r.status === "pending").length;
-  const totalEarnedKES = verifiedCount * 150; // KES 150 per completed referral
+  const totalRewards = verifiedCount; // one reward per verified referral
 
   const code =
     profile?.referral_code || (user?.email ? user.email.split("@")[0].toUpperCase() : "GAMEFLEX");
@@ -170,9 +170,9 @@ export default function ReferralDashboard() {
                 Referral <span className="text-primary">Dashboard</span>
               </h1>
               <p className="text-muted-foreground mt-1 max-w-xl text-sm sm:text-base">
-                Invite gamer friends to GameFlex. Earn{" "}
-                <span className="text-primary font-semibold">KES 150</span> for every verified
-                player added to your wallet!
+                Invite gamer friends to GameFlex. Unlock{" "}
+                <span className="text-primary font-semibold">rewards</span> for every verified
+                player who joins through you.
               </p>
             </div>
 
@@ -183,10 +183,10 @@ export default function ReferralDashboard() {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground uppercase font-medium">
-                  Total Referral Earnings
+                  Referral Rewards Earned
                 </div>
                 <div className="text-2xl font-display font-bold text-primary">
-                  KES {totalEarnedKES.toLocaleString()}
+                  {totalRewards.toLocaleString()} {totalRewards === 1 ? "Reward" : "Rewards"}
                 </div>
                 <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
                   <CheckCircle2 className="w-3 h-3 text-primary" /> {verifiedCount} verified
@@ -207,8 +207,8 @@ export default function ReferralDashboard() {
               <Share2 className="w-5 h-5 text-primary" /> Share Your Invite Link & Code
             </CardTitle>
             <CardDescription>
-              Send your link or code to friends. When they register and participate, KES 150 is
-              credited directly to you!
+              Send your link or code to friends. When they register and participate, a reward is
+              unlocked for you.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -381,7 +381,7 @@ export default function ReferralDashboard() {
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   {searchQuery
                     ? "No matching gamers found for your search query."
-                    : "Share your link above to start inviting players and earning KES 150 per referral."}
+                    : "Share your link above to start inviting players and earning rewards per referral."}
                 </p>
                 {!searchQuery && (
                   <Button variant="default" size="sm" onClick={copyLink} className="gap-2">
@@ -442,7 +442,7 @@ export default function ReferralDashboard() {
                             </Badge>
                           </td>
                           <td className="py-3 px-4 text-right font-display font-bold text-primary">
-                            {isCompleted ? "+ KES 150" : "KES 0"}
+                            {isCompleted ? "+ 1 Reward" : "—"}
                           </td>
                         </tr>
                       );
@@ -486,9 +486,9 @@ export default function ReferralDashboard() {
               <div className="h-12 w-12 rounded-2xl bg-primary/20 text-primary font-display font-bold text-xl flex items-center justify-center mx-auto">
                 3
               </div>
-              <h4 className="font-semibold text-foreground">Earn Cash Rewards</h4>
+              <h4 className="font-semibold text-foreground">Earn Rewards</h4>
               <p className="text-xs text-muted-foreground">
-                Receive KES 150 per friend directly into your GameFlex Wallet!
+                Unlock a GameFlex reward for every friend who joins and competes.
               </p>
             </div>
           </div>
