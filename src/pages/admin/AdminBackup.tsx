@@ -267,15 +267,6 @@ export default function AdminBackup() {
     }
   };
 
-  const handleDownloadSnapshotUnused = async (id: string) => {
-    const snapshot = await getSnapshot(id);
-    if (!snapshot) {
-      toast.error("Snapshot no longer available");
-      return;
-    }
-    exportAsJSON(snapshot.payload, getExportFilename("gameflex_snapshot", "json"));
-  };
-
   const handleRestoreFromSnapshot = async (id: string) => {
     const snapshot = await getSnapshot(id);
     if (!snapshot) {
