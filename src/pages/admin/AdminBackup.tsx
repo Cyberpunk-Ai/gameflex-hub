@@ -17,6 +17,8 @@ import {
   RotateCcw,
   Shield,
   ShieldCheck,
+  Sparkles,
+  Copy,
   Table as TableIcon,
   Trash2,
   Upload,
@@ -54,6 +56,7 @@ import {
   toFullSqlDump,
 } from "@/lib/backup/engine";
 import { sqlDumpToPayload } from "@/lib/backup/sql-parser";
+import { PLATFORM_MIGRATIONS, buildPlatformSchemaSql } from "@/lib/backup/schema-sql";
 import {
   MAX_SNAPSHOTS,
   dayKey,
@@ -86,6 +89,10 @@ const TABLE_LABELS: Record<string, string> = {
   rewards: "Rewards & Redemptions",
   user_follows: "Follows",
   user_roles: "Roles & Permissions",
+  squads: "Squads",
+  squad_members: "Squad Rosters",
+  squad_invites: "Squad Invites",
+  squad_messages: "Squad Chat",
 };
 
 const label = (table: string) => TABLE_LABELS[table] ?? table;
@@ -240,6 +247,24 @@ export default function AdminBackup() {
       return;
     }
     exportAsJSON(snapshot.payload, getExportFilename("gameflex_snapshot", "json"));
+  };
+
+  const handleDownloadSchema = () => {
+    downloadFile(
+      buildPlatformSchemaSql(),
+      getExportFilename("gameflex_schema", "sql"),
+      "application/sql",
+    );
+    toast.success("Schema migration script downloaded");
+  };
+
+  const handleCopySchema = async () => {
+    try {
+      await navigator.clipboard.writeText(buildPlatformSchemaSql());
+      toast.success("Schema SQL copied — paste it into your SQL editor and run");
+    } catch {
+      toast.error("Clipboard blocked — use Download .sql instead");
+    }
   };
 
   const handleRestoreFromSnapshot = async (id: string) => {
@@ -557,6 +582,51 @@ export default function AdminBackup() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Sparkles className="h-4 w-4 text-primary" /> Schema &amp; migrations
+          </CardTitle>
+          <CardDescription>
+            Paste-ready SQL for the newest platform features. Every statement is guarded, so it
+            creates missing tables, policies and functions without errors and re-runs safely — it
+            never drops a table or deletes a row. This script is also embedded in every snapshot
+            and SQL dump.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            {PLATFORM_MIGRATIONS.map((migration) => (
+              <div
+                key={migration.id}
+                className="rounded-lg border border-border/60 bg-secondary/20 p-3"
+              >
+                <div className="flex items-center gap-2">
+                  <FileCode className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span className="truncate text-sm font-semibold">{migration.name}</span>
+                  <Badge variant="secondary" className="ml-auto shrink-0">
+                    idempotent
+                  </Badge>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">{migration.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleCopySchema}>
+              <Copy className="mr-2 h-4 w-4" /> Copy SQL
+            </Button>
+            <Button variant="outline" onClick={handleDownloadSchema}>
+              <Download className="mr-2 h-4 w-4" /> Download .sql
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Run it in your database SQL editor once to activate squads, squad chat and numbered
+            lobby overflow.
+          </p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
