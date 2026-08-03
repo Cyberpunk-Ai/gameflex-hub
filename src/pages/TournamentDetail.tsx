@@ -493,6 +493,52 @@ export default function TournamentDetail() {
                   )}
                 </div>
               </div>
+
+              {lobbies.length > 0 && (
+                <div className="rounded-xl bg-card border border-border/50 p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <h3 className="font-display font-bold">Lobbies</h3>
+                    <span className="text-xs text-muted-foreground">
+                      {lobbyStats.occupancy}/{lobbyStats.capacity} seats taken
+                      {lobbyStats.overflowLobbies > 0
+                        ? ` • ${lobbyStats.overflowLobbies} overflow`
+                        : ""}
+                    </span>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {lobbies.map((lobby) => (
+                      <div
+                        key={lobby.id}
+                        className="rounded-lg border border-border/60 bg-background/50 p-4"
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="font-display font-bold text-primary">
+                            Lobby {lobby.lobbyTag}
+                          </span>
+                          {lobby.isFull ? (
+                            <Badge variant="secondary">Full</Badge>
+                          ) : (
+                            <Badge variant="outline" className="border-primary/40 text-primary">
+                              {lobby.seatsLeft} open
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden mb-2">
+                          <div
+                            className="h-full bg-primary transition-all"
+                            style={{ width: `${lobby.fillPercent}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {lobby.occupancy}/{lobby.capacity} seats
+                          {lobby.isOverflow ? " • overflow lobby" : ""}
+                          {lobby.room_code ? ` • ${lobby.room_code}` : ""}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="rounded-xl bg-card border border-border/50 p-6">
               <h3 className="font-display font-bold mb-4">Prize Distribution</h3>
