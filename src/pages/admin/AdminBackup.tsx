@@ -583,6 +583,51 @@ export default function AdminBackup() {
         </Card>
       </div>
 
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Sparkles className="h-4 w-4 text-primary" /> Schema &amp; migrations
+          </CardTitle>
+          <CardDescription>
+            Paste-ready SQL for the newest platform features. Every statement is guarded, so it
+            creates missing tables, policies and functions without errors and re-runs safely — it
+            never drops a table or deletes a row. This script is also embedded in every snapshot
+            and SQL dump.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            {PLATFORM_MIGRATIONS.map((migration) => (
+              <div
+                key={migration.id}
+                className="rounded-lg border border-border/60 bg-secondary/20 p-3"
+              >
+                <div className="flex items-center gap-2">
+                  <FileCode className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span className="truncate text-sm font-semibold">{migration.name}</span>
+                  <Badge variant="secondary" className="ml-auto shrink-0">
+                    idempotent
+                  </Badge>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">{migration.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleCopySchema}>
+              <Copy className="mr-2 h-4 w-4" /> Copy SQL
+            </Button>
+            <Button variant="outline" onClick={handleDownloadSchema}>
+              <Download className="mr-2 h-4 w-4" /> Download .sql
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Run it in your database SQL editor once to activate squads, squad chat and numbered
+            lobby overflow.
+          </p>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
