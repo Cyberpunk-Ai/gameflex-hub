@@ -341,7 +341,19 @@ export default function TournamentDetail() {
                 <Gamepad2 className="h-4 w-4 text-primary" />
                 {tournament.game.toUpperCase()}
               </span>
+              {lobbies.length > 0 && (
+                <span className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-primary" />
+                  {lobbies.length} {lobbies.length === 1 ? "lobby" : "lobbies"} •{" "}
+                  {lobbies.map((lobby) => lobby.lobbyTag).join(" ")}
+                </span>
+              )}
             </div>
+            <StartCountdown
+              startDate={tournament.start_date}
+              status={tournament.status}
+              className="mt-5 inline-block"
+            />
           </div>
           <div className="text-center md:text-right">
             <div className="font-display text-4xl font-bold text-primary mb-1">
