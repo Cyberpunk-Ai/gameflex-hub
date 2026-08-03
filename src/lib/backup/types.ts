@@ -16,6 +16,8 @@ export type BackupSnapshot = BackupSnapshotMeta & {
     exported_at: string;
     tables: Record<string, Record<string, unknown>[]>;
     local_data?: Record<string, unknown>;
+    /** Schema migrations shipped with the snapshot, so a dump can rebuild tables. */
+    migrations?: { id: string; name: string; sql: string }[];
   };
 };
 
