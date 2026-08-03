@@ -6,6 +6,7 @@ import type {
   RestoreTableResult,
 } from "./types";
 import { dayKey, putSnapshot } from "./snapshot-store";
+import { PLATFORM_MIGRATIONS, buildPlatformSchemaSql } from "./schema-sql";
 
 /** Tables included in a full snapshot. */
 export const BACKUP_TABLES = [
@@ -27,6 +28,10 @@ export const BACKUP_TABLES = [
   "rewards",
   "user_follows",
   "user_roles",
+  "squads",
+  "squad_members",
+  "squad_invites",
+  "squad_messages",
 ] as const;
 
 /**
@@ -82,6 +87,7 @@ export async function buildSnapshot(
     version: 2,
     exported_at: exportedAt,
     tables,
+    migrations: PLATFORM_MIGRATIONS.map(({ id, name, sql }) => ({ id, name, sql })),
   };
 
   const snapshot: BackupSnapshot = {
@@ -111,6 +117,9 @@ export function normalizePayload(input: unknown): BackupSnapshot["payload"] | nu
       exported_at: (record["exported_at"] as string) ?? new Date().toISOString(),
       tables: record["tables"] as Record<string, Record<string, unknown>[]>,
       local_data: record["local_data"] as Record<string, unknown> | undefined,
+      migrations: Array.isArray(record["migrations"])
+        ? (record["migrations"] as { id: string; name: string; sql: string }[])
+        : undefined,
     };
   }
   // v1 snapshot wrapper { payload: { tables } }
@@ -219,13 +228,38 @@ export async function restorePayload(
   };
 }
 
-export function toFullSqlDump(payload: BackupSnapshot["payload"]): string {
+/**
+ * Builds a paste-ready SQL dump.
+ *
+ * With `includeSchema` (the default) the dump starts with the guarded platform
+ * migrations, so it can create the tables it needs on a fresh or partially
+ * migrated database and then fill them. It never emits DROP, DELETE or
+ * TRUNCATE, and every INSERT ends in ON CONFLICT DO NOTHING.
+ */
+export function toFullSqlDump(
+  payload: BackupSnapshot["payload"],
+  options: { includeSchema?: boolean } = {},
+): string {
+  const includeSchema = options.includeSchema !== false;
   const lines: string[] = [
     "-- GameFlex complete database dump",
     `-- Generated at: ${payload.exported_at}`,
-    "-- Restore-safe: contains INSERT statements only.",
+    "-- Restore-safe: guarded schema (optional) followed by INSERT statements only.",
     "",
   ];
+
+  if (includeSchema) {
+    const migrations = payload.migrations?.length
+      ? payload.migrations.map((m) => `-- >>> ${m.id} — ${m.name}\n${m.sql}\n`).join("\n")
+      : buildPlatformSchemaSql();
+    lines.push(
+      "-- ---------------------------------------------------------------- schema",
+      "-- Idempotent: safe to run on a database that already has these objects.",
+      migrations,
+      "-- ------------------------------------------------------------------ data",
+      "",
+    );
+  }
 
   for (const [table, rows] of Object.entries(payload.tables)) {
     if (!Array.isArray(rows) || rows.length === 0) {
