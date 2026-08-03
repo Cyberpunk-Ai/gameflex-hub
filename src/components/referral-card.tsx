@@ -52,7 +52,7 @@ export function ReferralCard() {
         <div>
           <h3 className="font-display font-bold text-lg">Invite Friends & Earn</h3>
           <p className="text-sm text-muted-foreground">
-            Earn KES 150 + Milestone bonuses per verified gamer!
+            Earn rewards + milestone bonuses per verified gamer!
           </p>
         </div>
       </div>
