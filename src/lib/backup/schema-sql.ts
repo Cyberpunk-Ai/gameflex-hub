@@ -1,4 +1,20 @@
--- ============================================================================
+/**
+ * Platform migration SQL, kept in the app so admins can copy, download, and
+ * ship it with a backup. Mirrors supabase/migrations/*.sql exactly.
+ *
+ * Every statement is guarded, so running any of these against a database that
+ * already has the objects is a no-op instead of an error, and nothing here
+ * drops a table or deletes a row.
+ */
+
+export type PlatformMigration = {
+  id: string;
+  name: string;
+  description: string;
+  sql: string;
+};
+
+const SQUADS_AND_LOBBY_OVERFLOW = `-- ============================================================================
 -- GameFlex platform migration — Squads (+ squad chat) & Lobby overflow
 -- ----------------------------------------------------------------------------
 -- Fully idempotent: every statement is guarded, so you can paste this into the
@@ -356,3 +372,31 @@ begin
   execute 'grant execute on function public.claim_lobby_seat(uuid) to authenticated';
 end
 $guard$;
+`;
+
+export const PLATFORM_MIGRATIONS: PlatformMigration[] = [
+  {
+    id: "20260101000000_squads_and_lobby_overflow",
+    name: "Squads, squad chat & lobby overflow",
+    description:
+      "Creates squads, squad_members, squad_invites and squad_messages with RLS, " +
+      "grants and realtime, then adds numbered lobbies (#1, #2, #3 …) with the " +
+      "claim_lobby_seat overflow function.",
+    sql: SQUADS_AND_LOBBY_OVERFLOW,
+  },
+];
+
+/** One paste-ready script containing every platform migration, in order. */
+export function buildPlatformSchemaSql(): string {
+  return [
+    "-- ============================================================",
+    "-- GameFlex platform schema",
+    `-- Generated: ${new Date().toISOString()}`,
+    "-- Idempotent and additive: safe to run on any GameFlex database.",
+    "-- ============================================================",
+    "",
+    ...PLATFORM_MIGRATIONS.map((migration) =>
+      [`-- >>> ${migration.id} — ${migration.name}`, migration.sql, ""].join("\n"),
+    ),
+  ].join("\n");
+}
