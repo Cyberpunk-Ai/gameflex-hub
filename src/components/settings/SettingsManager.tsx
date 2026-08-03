@@ -1093,7 +1093,7 @@ export function SettingsManager({
                           </div>
                           <div>
                             <div className="font-semibold text-foreground text-sm">
-                              Earn KES 150 per Verified Referral
+                              Earn rewards per verified referral
                             </div>
                             <div className="text-xs text-muted-foreground">
                               Track stats, manage codes, and view invited gamers.
