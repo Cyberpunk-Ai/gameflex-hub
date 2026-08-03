@@ -23,6 +23,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn, formatExternalUrl } from "@/lib/utils";
 import { mockTournaments } from "@/lib/mock-data";
 import { getLocalRegistrations } from "@/utils/local-registrations";
+import { StartCountdown } from "@/components/tournament/start-countdown";
+import { assignLobbyNumbers, summarizeLobbies } from "@/lib/lobby/overflow";
 
 const statusLabels: Record<string, string> = {
   live: "LIVE",
@@ -212,6 +214,28 @@ export default function TournamentDetail() {
     },
     enabled: !!id && !!user,
   });
+
+  // Numbered lobbies for this tournament (#1, #2, #3 …) incl. overflow rooms.
+  const { data: tournamentRooms = [] } = useQuery({
+    queryKey: ["tournament-lobbies", id],
+    queryFn: async () => {
+      try {
+        const { data } = await supabase
+          .from("game_rooms")
+          .select("*")
+          .eq("tournament_id", id)
+          .order("created_at", { ascending: true });
+        return data ?? [];
+      } catch (e) {
+        console.warn("Tournament lobbies unavailable");
+        return [];
+      }
+    },
+    enabled: !!id,
+  });
+
+  const lobbies = assignLobbyNumbers(tournamentRooms as any[]);
+  const lobbyStats = summarizeLobbies(lobbies);
 
   if (isLoading) {
     return (
